@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import time
-import tkinter as tk 
+import tkinter as tk
 from tkinter import filedialog
 from players.dota_player import DotaPlayer
 
@@ -43,7 +43,7 @@ def main():
         if not dota_player.get_player_info(): print("Failed to get player info")
         if not dota_player.get_matches(): print("Failed to get player's matches info")
         dota_player.save_data(DOTA_DB, overwrite_data=True)
-    
+
 if __name__ == "__main__":
     tk.Tk().withdraw()
     main()
