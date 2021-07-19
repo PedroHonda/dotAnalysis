@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import requests
+from datetime import datetime as dtm
 
 logger = logging.getLogger(__name__)
 
@@ -95,3 +96,37 @@ class DotaPlayer:
             return False
         self.player_matches = json.loads(player_matches_response.text)
         return True
+
+    def simplified_matches(self, hero_dict=None):
+        '''
+        Based on self.player_matches return a list with:
+        "match_id" = 
+        '''
+        hero_dict = hero_dict or {}
+        simplified = []
+        if self.player_matches:
+            for match in self.player_matches:
+                # Skip games that are not "All Pick"
+                if match["game_mode"] not in (1, 22):
+                    continue
+                entry = {}
+                entry["match_id"] = match["match_id"]
+                entry["date"] = dtm.fromtimestamp(match["start_time"])
+                entry["kda"] = str(match["kills"])
+                entry["kda"] += "/"+str(match["deaths"])
+                entry["kda"] += "/"+str(match["assists"])
+                entry["hero"] = hero_dict.get(str(match["hero_id"]), str(match["hero_id"]))
+                # "player_slot" > 127 : Dire
+                #  "player_slot" < 128 : Radiant
+                if match["player_slot"] > 127:
+                    entry["side"] = "dire"
+                else:
+                    entry["side"] = "radiant"
+                if entry["side"] == "radiant" and match["radiant_win"]:
+                    entry["win"] = 1
+                elif entry["side"] == "dire" and not match["radiant_win"]:
+                    entry["win"] = 1
+                else:
+                    entry["win"] = 0
+                simplified.append(entry)
+        return simplified
