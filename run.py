@@ -18,6 +18,7 @@ logging.basicConfig(filename=logName,
 # Static paths
 CWD = os.getcwd()
 DOTA_DB = os.path.join(CWD, "dota_db")
+DOTA_DB_PLAYERS = os.path.join(DOTA_DB, "players")
 
 def main():
     parser = argparse.ArgumentParser()
@@ -42,7 +43,7 @@ def main():
         dota_player = DotaPlayer(account_id, player_name)
         if not dota_player.get_player_info(): print("Failed to get player info")
         if not dota_player.get_matches(): print("Failed to get player's matches info")
-        dota_player.save_data(DOTA_DB, overwrite_data=True)
+        dota_player.save_data(DOTA_DB_PLAYERS, overwrite_data=True)
 
 if __name__ == "__main__":
     tk.Tk().withdraw()

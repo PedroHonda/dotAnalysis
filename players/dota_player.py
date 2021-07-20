@@ -54,6 +54,7 @@ class DotaPlayer:
         logger.debug("Loading data from files: %s", dota_player_files)
         for dota_player_file in dota_player_files:
             if os.path.basename(dota_player_file) == "player_info.json":
+                logger.debug(dota_player_file)
                 with open(dota_player_file) as content:
                     self.player_info = json.load(content)
                 self.account_id = self.player_info["profile"]["account_id"]
