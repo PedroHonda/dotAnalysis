@@ -35,6 +35,7 @@ styles = {
 cwd = os.getcwd()
 available_players = os.listdir(os.path.join(cwd, "dota_db", "players"))
 available_players.remove(".gitignore")
+available_players.append("All")
 
 #------------------ PLOTLY FIG
 layout = go.Layout(uirevision = 'value')
@@ -86,6 +87,7 @@ def get_simplified_matches_df(dota_player):
     return sdf
 
 def get_match_details_per_month_by_player(date, player):
+    if player == "All": return ""
     dota_player = get_dota_player(player)
     sdf = get_simplified_matches_df(dota_player)
     date_flt = str(date.year)+"-"+str(date.month)
@@ -101,15 +103,21 @@ def get_match_details_per_month_by_player(date, player):
     return json.dumps(matches_month, indent=2)
 
 def get_winrate_fig_by_player(player):
-    dota_player = get_dota_player(player)
-    sdf = get_simplified_matches_df(dota_player)
-    sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
-    sdf_month["winrate"] = 100*sdf_month.win/sdf_month.match
-    month = [dtm(date[0], date[1], 1) for date in sdf_month.index]
-    
+    if player == "All": players_id = available_players
+    else:   players_id = [player]
+
     layout = go.Layout(uirevision = 'value')
     fig = go.Figure(layout = layout)
-    fig.add_trace(go.Scatter(x=month, y=sdf_month.winrate))
+    for player_id in players_id:
+        if player_id == "All": continue
+        dota_player = get_dota_player(player_id)
+        sdf = get_simplified_matches_df(dota_player)
+        sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
+        sdf_month["winrate"] = 100*sdf_month.win/sdf_month.match
+        month = [dtm(date[0], date[1], 1) for date in sdf_month.index]
+        
+        
+        fig.add_trace(go.Scatter(x=month, y=sdf_month.winrate, name=player_id))
     return fig
 
 
@@ -121,6 +129,7 @@ def get_winrate_fig_by_player(player):
 )
 def display_click_data(clickData, player):
     if clickData:
+        logging.debug("clickData=%s", clickData)
         date = dtm.strptime(clickData["points"][0]["x"], "%Y-%m-%d")
         return get_match_details_per_month_by_player(date, player)
     return json.dumps(clickData, indent=2)
