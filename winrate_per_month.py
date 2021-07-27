@@ -3,11 +3,13 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table
 import json
 import logging
 import os
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 import time
 from dash.dependencies import Input, Output
 from datetime import datetime as dtm
@@ -31,11 +33,24 @@ styles = {
     }
 }
 
+theme =  {
+    'dark': True,
+    'detail': '#007439',
+    'primary': '#00EA64',
+    'secondary': '#6E6E6E',
+}
+
+
 #------------------ STATIC DB QUERIES
 cwd = os.getcwd()
 available_players = os.listdir(os.path.join(cwd, "dota_db", "players"))
 available_players.remove(".gitignore")
 available_players.append("All")
+
+simplified_matches_columns = ["#", "date", "match_id", "kda", "side", "hero", "win"]
+
+with open(os.path.join(cwd, "dota_db", "heroes", "heroes_dict.json")) as content:
+    heroes_dict = json.load(content)
 
 #------------------ PLOTLY FIG
 layout = go.Layout(uirevision = 'value')
@@ -60,14 +75,12 @@ app.layout = html.Div([
 
     dcc.Graph(id='my-winrate-graph', figure=fig),
 
-    html.Div([
-        dcc.Markdown("""
-            **Matches' details per month**
-
-            Click on points in the graph.
-        """),
-        html.Pre(id='click-data', style=styles['pre']),
-    ], className='three columns')
+    dash_table.DataTable(
+        id='matches-month',
+        columns=[{"name": i, "id": i} for i in simplified_matches_columns],
+        data=[],
+        editable=True
+    )
 
 ])
 
@@ -80,27 +93,11 @@ def get_dota_player(player):
     return dota_player
 
 def get_simplified_matches_df(dota_player):
-    simplified_matches = dota_player.simplified_matches()
+    simplified_matches = dota_player.simplified_matches(heroes_dict)
     sdf = pd.DataFrame(simplified_matches)
     sdf.index = sdf.date
     sdf["match"]=1
     return sdf
-
-def get_match_details_per_month_by_player(date, player):
-    if player == "All": return ""
-    dota_player = get_dota_player(player)
-    sdf = get_simplified_matches_df(dota_player)
-    date_flt = str(date.year)+"-"+str(date.month)
-
-    matches_month = sdf.loc[date_flt][['match_id', 'kda', 'hero', 'side', 'win']]
-    matches_month.index = matches_month.index.strftime("%Y-%m-%d")
-    matches_month["date"] = matches_month.index
-    matches_month = [aux.to_dict() for aux in matches_month.applymap(str).iloc]
-
-    for match in matches_month:
-        match["match_id"] = "https://www.opendota.com/matches/"+match["match_id"]
-
-    return json.dumps(matches_month, indent=2)
 
 def get_winrate_fig_by_player(player):
     if player == "All": players_id = available_players
@@ -115,31 +112,47 @@ def get_winrate_fig_by_player(player):
         sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
         sdf_month["winrate"] = 100*sdf_month.win/sdf_month.match
         month = [dtm(date[0], date[1], 1) for date in sdf_month.index]
-        
-        
         fig.add_trace(go.Scatter(x=month, y=sdf_month.winrate, name=player_id))
+        #fig.add_trace(px.scatter(x=month, y=sdf_month.winrate, template="plotly_dark"))
     return fig
 
+def get_match_details_per_month_by_player_table(date, player):
+    if player == "All": return []
+    dota_player = get_dota_player(player)
+    sdf = get_simplified_matches_df(dota_player)
+    date_flt = str(date.year)+"-"+str(date.month)
+
+    matches_month = sdf.loc[date_flt][['match_id', 'kda', 'hero', 'side', 'win']]
+    matches_month.index = matches_month.index.strftime("%Y-%m-%d")
+    matches_month["date"] = matches_month.index
+    matches_month = [aux.to_dict() for aux in matches_month.applymap(str).iloc]
+
+    for idx, match in enumerate(matches_month):
+        match["#"] = idx
+        match_id_link = "https://www.opendota.com/matches/"+match["match_id"]
+        match["match_id"] = match_id_link
+
+    return matches_month
 
 #------------------ CALLBACK DEFINITION
-@app.callback(
-    Output('click-data', 'children'),
-    Input('my-winrate-graph', 'clickData'),
-    Input('player', 'value')
-)
-def display_click_data(clickData, player):
-    if clickData:
-        logging.debug("clickData=%s", clickData)
-        date = dtm.strptime(clickData["points"][0]["x"], "%Y-%m-%d")
-        return get_match_details_per_month_by_player(date, player)
-    return json.dumps(clickData, indent=2)
-
 @app.callback(
     Output('my-winrate-graph', 'figure'),
     Input('player', 'value')
 )
 def plot_winrate_player(player):
     return get_winrate_fig_by_player(player)
+
+@app.callback(
+    Output('matches-month', 'data'),
+    Input('my-winrate-graph', 'clickData'),
+    Input('player', 'value')
+)
+def display_click_data_table(clickData, player):
+    if clickData:
+        logging.debug("clickData=%s", clickData)
+        date = dtm.strptime(clickData["points"][0]["x"], "%Y-%m-%d")
+        return get_match_details_per_month_by_player_table(date, player)
+    return []
 
 if __name__ == "__main__":
     port = 8050
