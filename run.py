@@ -4,7 +4,7 @@ import os
 import time
 import tkinter as tk
 from tkinter import filedialog
-from players.dota_player import DotaPlayer
+from dota_lib.dota_player import DotaPlayer
 
 # Logging information
 TIME_TAG = time.strftime("%Y_%m_%d-%H_%M_%S")

@@ -14,7 +14,7 @@ import plotly.express as px
 import time
 from dash.dependencies import Input, Output
 from datetime import datetime as dtm
-from players.dota_player import DotaPlayer
+from dota_lib.dota_player import DotaPlayer
 
 #------------------ Logging information
 TIME_TAG = time.strftime("%Y_%m_%d-%H_%M_%S")
@@ -61,16 +61,42 @@ app.layout = html.Div([
                     width={'size': 6, 'offset': 3},
                     ),
             ),
-    dbc.Row(dbc.Col(html.Div([
+    dbc.Row([dbc.Col(html.Div([
                                 dbc.DropdownMenu([dbc.DropdownMenuItem(player, id=player, toggle=True) for player in available_players],
                                     label="Players",
                                     id='player-dropdown-menu',
-                                    right=False
-                                )
-                            ]),
-
+                                ),
+                            ],style={"display": "flex", "flexWrap": "wrap"},),
                     ),
-            ),
+            dbc.Col(html.Div([
+                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="2_"+player, toggle=True) for player in available_players],
+                                    label="Players",
+                                    id='player2-dropdown-menu',
+                                )
+                            ],style={"display": "flex", "flexWrap": "wrap"},),
+                    ),
+            dbc.Col(html.Div([
+                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="3_"+player, toggle=True) for player in available_players],
+                                    label="Players",
+                                    id='player3-dropdown-menu',
+                                )
+                            ],style={"display": "flex", "flexWrap": "wrap"},),
+                    ),
+            dbc.Col(html.Div([
+                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="4_"+player, toggle=True) for player in available_players],
+                                    label="Players",
+                                    id='player4-dropdown-menu',
+                                )
+                            ],style={"display": "flex", "flexWrap": "wrap"},),
+                    ),
+            dbc.Col(html.Div([
+                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="5_"+player, toggle=True) for player in available_players],
+                                    label="Players",
+                                    id='player5-dropdown-menu',
+                                )
+                            ],style={"display": "flex", "flexWrap": "wrap"},),
+                    ),
+            ]),
     dbc.Row(dbc.Col(html.Div(id='graph-container', children=[
                                 dcc.Graph(id='my-winrate-graph', figure=fig),
                             ], style={'display':'none'})
