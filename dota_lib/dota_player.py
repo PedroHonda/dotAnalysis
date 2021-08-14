@@ -101,7 +101,12 @@ class DotaPlayer:
     def simplified_matches(self, hero_dict=None):
         '''
         Based on self.player_matches return a list with:
-        "match_id" = 
+        - "match_id" : match ID
+        - "date" : <year>-<month>-<day> in a string format
+        - "kda" : <kill>/<death>/<assist> in a string format
+        - "hero" : in case hero_dict is provided, translate ID to hero's name
+        - "side" : either 'radiant' or 'dire'
+        - "win" : 0 = lose; 1 = win
         '''
         hero_dict = hero_dict or {}
         simplified = []
