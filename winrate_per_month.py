@@ -55,72 +55,81 @@ available_players.append("<Empty>")
 with open(os.path.join(cwd, "dota_db", "heroes", "heroes_dict.json")) as content:
     heroes_dict = json.load(content)
 
+#------------------ DOTA TEAM
+dota_team_obj = DotaTeam()
+
 #------------------ PLOTLY FIG
 layout = go.Layout(uirevision = 'value', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
 fig = go.Figure(layout = layout)
 
 #------------------ APP LAYOUT
 app.layout = html.Div([
-    dbc.Row(dbc.Col(html.H1("Winrate per Month", style={'text-align': 'center'}),
+    dbc.Row(
+        dbc.Col(
+            html.H1("Winrate per Month", style={'text-align': 'center'}),
                     width={'size': 6, 'offset': 3},
-                    ),
-            ),
-    dbc.Row([dbc.Col(html.Div([
-                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id=player, toggle=True) for player in available_players],
-                                    label="Player",
-                                    id='player-dropdown-menu',
-                                ),
-                            ],style={"display": "flex", "flexWrap": "wrap"},),
-                    ),
-            dbc.Col(html.Div([
-                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="1_"+player, toggle=True) for player in available_players],
-                                    label="Player 1",
-                                    id='1_player-dropdown-menu',
-                                )
-                            ],style={"display": "flex", "flexWrap": "wrap"},),
-                    ),
-            dbc.Col(html.Div([
-                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="2_"+player, toggle=True) for player in available_players],
-                                    label="Player 2",
-                                    id='2_player-dropdown-menu',
-                                )
-                            ],style={"display": "flex", "flexWrap": "wrap"},),
-                    ),
-            dbc.Col(html.Div([
-                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="3_"+player, toggle=True) for player in available_players],
-                                    label="Player 3",
-                                    id='3_player-dropdown-menu',
-                                )
-                            ],style={"display": "flex", "flexWrap": "wrap"},),
-                    ),
-            dbc.Col(html.Div([
-                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="4_"+player, toggle=True) for player in available_players],
-                                    label="Player 4",
-                                    id='4_player-dropdown-menu',
-                                )
-                            ],style={"display": "flex", "flexWrap": "wrap"},),
-                    ),
-            dbc.Col(html.Div([
-                                dbc.DropdownMenu([dbc.DropdownMenuItem(player, id="5_"+player, toggle=True) for player in available_players],
-                                    label="Player 5",
-                                    id='5_player-dropdown-menu',
-                                )
-                            ],style={"display": "flex", "flexWrap": "wrap"},),
-                    ),
-            dbc.Col(html.H3(["Winrate: ", dbc.Badge(" %", className="ml-1", id="winrate_percentage")]),),
-            ]),
-    dbc.Row(dbc.Col(html.Div(id='graph-container', children=[
-                                dcc.Graph(id='my-winrate-graph', figure=fig),
-                            ], style={'display':'none'})
-                    )
-            ),
-    dbc.Row(dbc.Col(html.Div(id='team-graph-container', children=[
-                                dcc.Graph(id='team-winrate-graph', figure=fig),
-                            ], style={'display':'none'})
-                    )
-            ),
-    #dbc.Row(dbc.Col(dcc.Graph(id='my-winrate-graph', figure=fig),)),
-    dbc.Row(dbc.Col(html.Div(id='matches-month-dbc'))),
+        ),
+    ),
+    dbc.Row([
+        dbc.Col(
+            html.Div([
+                dbc.DropdownMenu(
+                    [dbc.DropdownMenuItem(player, id="1_"+player, toggle=True) for player in available_players],
+                    label="Player 1",
+                    id='1_player-dropdown-menu',
+                )
+            ],style={"display": "flex", "flexWrap": "wrap"},),
+        ),
+        dbc.Col(
+            html.Div([
+                dbc.DropdownMenu(
+                    [dbc.DropdownMenuItem(player, id="2_"+player, toggle=True) for player in available_players],
+                    label="Player 2",
+                    id='2_player-dropdown-menu',
+                )
+            ],style={"display": "flex", "flexWrap": "wrap"},),
+        ),
+        dbc.Col(
+            html.Div([
+                dbc.DropdownMenu(
+                    [dbc.DropdownMenuItem(player, id="3_"+player, toggle=True) for player in available_players],
+                    label="Player 3",
+                    id='3_player-dropdown-menu',
+                )
+            ],style={"display": "flex", "flexWrap": "wrap"},),
+        ),
+        dbc.Col(
+            html.Div([
+                dbc.DropdownMenu(
+                    [dbc.DropdownMenuItem(player, id="4_"+player, toggle=True) for player in available_players],
+                    label="Player 4",
+                    id='4_player-dropdown-menu',
+                )
+            ],style={"display": "flex", "flexWrap": "wrap"},),
+        ),
+        dbc.Col(
+            html.Div([
+                dbc.DropdownMenu(
+                    [dbc.DropdownMenuItem(player, id="5_"+player, toggle=True) for player in available_players],
+                    label="Player 5",
+                    id='5_player-dropdown-menu',
+                )
+            ],style={"display": "flex", "flexWrap": "wrap"},),
+        ),
+        dbc.Col(html.H3(["Winrate: ", dbc.Badge(" %", className="ml-1", id="winrate_percentage")]),),
+        ]),
+    dbc.Row(
+        dbc.Col(
+            html.Div(id='team-graph-container',
+                children=[dcc.Graph(id='team-winrate-graph', figure=fig),],
+                style={'display':'none'})
+        )
+    ),
+    dbc.Row(
+        dbc.Col(
+            html.Div(id='team-matches-month-dbc')
+        )
+    ),
 ])
 
 #------------------ FUNCTIONS
@@ -131,39 +140,12 @@ def get_dota_player(player):
     dota_player.load_data(dota_player_files)
     return dota_player
 
-def get_simplified_matches_df(dota_player):
-    simplified_matches = dota_player.simplified_matches(heroes_dict)
-    sdf = pd.DataFrame(simplified_matches)
-    sdf.index = sdf.date
-    sdf["match"]=1
-    return sdf
-
 def get_team_simplified_matches_df(dota_team):
     simplified_matches = dota_team.matches
     sdf = pd.DataFrame(simplified_matches)
     sdf.index = sdf.date
     sdf["match"]=1
     return sdf
-
-def get_winrate_fig_by_player(player):
-    if player == "All": players_id = available_players
-    elif player not in available_players: return go.Figure()
-    elif "Empty" in player: return go.Figure()
-    else:   players_id = [player]
-
-    layout = go.Layout(uirevision = 'value', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    fig = go.Figure(layout = layout)
-    for player_id in players_id:
-        if player_id == "All": continue
-        dota_player = get_dota_player(player_id)
-        sdf = get_simplified_matches_df(dota_player)
-        sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
-        sdf_month["winrate"] = 100*sdf_month.win/sdf_month.match
-        month = [dtm(date[0], date[1], 1) for date in sdf_month.index]
-        fig.add_trace(go.Scatter(x=month, y=sdf_month.winrate, name=player_id))
-    fig.layout.xaxis.color = 'white'
-    fig.layout.yaxis.color = 'white'
-    return fig
 
 def get_winrate_fig_by_team(team):
     dota_team = []
@@ -179,7 +161,8 @@ def get_winrate_fig_by_team(team):
     for idx, player in enumerate(dota_team):
         dota_player = get_dota_player(player)
         dota_team[idx] = dota_player
-    
+
+    global dota_team_obj
     dota_team_obj = DotaTeam(dota_team)
     sdf = get_team_simplified_matches_df(dota_team_obj)
     sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
@@ -191,10 +174,9 @@ def get_winrate_fig_by_team(team):
 
     return fig, dota_team_obj.winrate
 
-def get_match_details_per_month_by_player_table_dbc(date, player):
-    if player == "All": return []
-    dota_player = get_dota_player(player)
-    sdf = get_simplified_matches_df(dota_player)
+def get_team_match_details_per_month_by_player_table_dbc(date):
+    global dota_team_obj
+    sdf = get_team_simplified_matches_df(dota_team_obj)
     date_flt = str(date.year)+"-"+str(date.month)
 
     matches_month = sdf.loc[date_flt][['match_id', 'kda', 'hero', 'side', 'win']]
@@ -235,26 +217,6 @@ def get_match_details_per_month_by_player_table_dbc(date, player):
 #------------------ CALLBACK DEFINITION
 @app.callback(
     [
-        Output('graph-container', 'style'),
-        Output('my-winrate-graph', 'figure'),
-        Output('player-dropdown-menu', 'label')
-    ],
-    [
-        Input(player, "n_clicks") for player in available_players
-    ]
-)
-def plot_winrate_player_dbc(*args):
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        player = "<Empty>"
-        display = {'display':'none'}
-    else:
-        player = ctx.triggered[0]["prop_id"].split(".")[0]
-        display = {'display':'block'}
-    return display, get_winrate_fig_by_player(player), player
-
-@app.callback(
-    [
         Output('team-graph-container', 'style'),
         Output('team-winrate-graph', 'figure'),
         Output('winrate_percentage', 'children'),
@@ -287,15 +249,14 @@ def plot_winrate_team_dbc(*args):
     return display, fig, "{:10.2f}".format(winrate)+" %", players[0], players[1], players[2], players[3], players[4]
 
 @app.callback(
-    dash.dependencies.Output('matches-month-dbc', 'children'),
-    Input('my-winrate-graph', 'clickData'),
-    Input('player-dropdown-menu', 'label')
+    Output('team-matches-month-dbc', 'children'),
+    Input('team-winrate-graph', 'clickData'),
 )
-def display_click_data_table_dbc(clickData, player):
+def display_click_data_table_dbc(clickData):
     if clickData:
-        logging.debug("clickData=%s", clickData)
+        logging.debug("team_clickData=%s", clickData)
         date = dtm.strptime(clickData["points"][0]["x"], "%Y-%m-%d")
-        return get_match_details_per_month_by_player_table_dbc(date, player)
+        return get_team_match_details_per_month_by_player_table_dbc(date)
     return []
 
 if __name__ == "__main__":
