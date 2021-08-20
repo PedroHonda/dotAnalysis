@@ -5,44 +5,19 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import dash_table
 import json
 import logging
 import os
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
-import time
 from dash.dependencies import Input, Output
 from datetime import datetime as dtm
 from dota_lib.dota_player import DotaPlayer
 from dota_lib.dota_team import DotaTeam
+from dash_app import app
 
 #------------------ Logging information
-TIME_TAG = time.strftime("%Y_%m_%d-%H_%M_%S")
-logName = "./logs/winrate_dota_log_" + TIME_TAG + ".txt"
-logging.basicConfig(filename=logName,
-    level=logging.DEBUG,
-    format='%(asctime)s.%(msecs)03d %(levelname).1s\t\t%(filename)s[%(lineno)d] : %(message)s',
-    datefmt='%d-%m-%y %H:%M:%S',
-    filemode='w')
-
-app = dash.Dash(__name__)
-
-styles = {
-    'pre': {
-        'border': 'thin lightgrey solid',
-        'overflowX': 'scroll'
-    }
-}
-
-theme =  {
-    'dark': True,
-    'detail': '#007439',
-    'primary': '#00EA64',
-    'secondary': '#6E6E6E',
-}
-
+logger = logging.getLogger(__name__)
 
 #------------------ STATIC DB QUERIES
 cwd = os.getcwd()
@@ -55,6 +30,17 @@ available_players.append("<Empty>")
 with open(os.path.join(cwd, "dota_db", "heroes", "heroes_dict.json")) as content:
     heroes_dict = json.load(content)
 
+#------------------ CSS STYLES
+style_center = {
+        "width":"1700px",
+        "max-width":"1700px",
+        "display":"inline-block",
+        "margin-left":"auto",
+        "margin-right":"auto"}
+style_logo = {
+        "width":"100px",
+        "max-width":"100px",}
+
 #------------------ DOTA TEAM
 dota_team_obj = DotaTeam()
 
@@ -63,76 +49,86 @@ layout = go.Layout(uirevision = 'value', paper_bgcolor='rgba(0,0,0,0)', plot_bgc
 fig = go.Figure(layout = layout)
 
 #------------------ APP LAYOUT
-app.layout = html.Div([
-    dbc.Row(
-        dbc.Col(
-            html.H1("Winrate per Month", style={'text-align': 'center'}),
-                    width={'size': 6, 'offset': 3},
+def app_layout():
+    app_layout = html.Div([
+        
+    html.Center(html.Div([
+        dbc.Row(
+            dbc.Col(
+                html.H3("Winrate per Month", style={'text-align': 'center'}),
+                        width={'size': 6, 'offset': 3},
+            ),
         ),
-    ),
-    dbc.Row([
-        dbc.Col(
-            html.Div([
-                dbc.DropdownMenu(
-                    [dbc.DropdownMenuItem(player, id="1_"+player, toggle=True) for player in available_players],
-                    label="Player 1",
-                    id='1_player-dropdown-menu',
-                )
-            ],style={"display": "flex", "flexWrap": "wrap"},),
+        dbc.Row([
+            dbc.Col(
+                html.Div([
+                    dbc.DropdownMenu(
+                        [dbc.DropdownMenuItem(player, id="1_"+player, toggle=True) for player in available_players],
+                        label="Player 1",
+                        id='1_player-dropdown-menu',
+                    )
+                ],style={"display": "flex", "flexWrap": "wrap"},),
+            ),
+            dbc.Col(
+                html.Div([
+                    dbc.DropdownMenu(
+                        [dbc.DropdownMenuItem(player, id="2_"+player, toggle=True) for player in available_players],
+                        label="Player 2",
+                        id='2_player-dropdown-menu',
+                    )
+                ],style={"display": "flex", "flexWrap": "wrap"},),
+            ),
+            dbc.Col(
+                html.Div([
+                    dbc.DropdownMenu(
+                        [dbc.DropdownMenuItem(player, id="3_"+player, toggle=True) for player in available_players],
+                        label="Player 3",
+                        id='3_player-dropdown-menu',
+                    )
+                ],style={"display": "flex", "flexWrap": "wrap"},),
+            ),
+            dbc.Col(
+                html.Div([
+                    dbc.DropdownMenu(
+                        [dbc.DropdownMenuItem(player, id="4_"+player, toggle=True) for player in available_players],
+                        label="Player 4",
+                        id='4_player-dropdown-menu',
+                    )
+                ],style={"display": "flex", "flexWrap": "wrap"},),
+            ),
+            dbc.Col(
+                html.Div([
+                    dbc.DropdownMenu(
+                        [dbc.DropdownMenuItem(player, id="5_"+player, toggle=True) for player in available_players],
+                        label="Player 5",
+                        id='5_player-dropdown-menu',
+                    )
+                ],style={"display": "flex", "flexWrap": "wrap"},),
+            ),
+            dbc.Col(html.H3(["Winrate: ", dbc.Badge(" %", className="ml-1", id="winrate_percentage")]),),
+            ]),
+        dbc.Row(
+            dbc.Col(
+                html.Div(id='team-graph-container',
+                    children=[dcc.Graph(id='team-winrate-graph', figure=fig),],
+                    style={'display':'none'})
+            )
         ),
-        dbc.Col(
-            html.Div([
-                dbc.DropdownMenu(
-                    [dbc.DropdownMenuItem(player, id="2_"+player, toggle=True) for player in available_players],
-                    label="Player 2",
-                    id='2_player-dropdown-menu',
-                )
-            ],style={"display": "flex", "flexWrap": "wrap"},),
+        dbc.Row(
+            dbc.Col(
+                html.Div(id='team-matches-month-dbc')
+            )
         ),
-        dbc.Col(
-            html.Div([
-                dbc.DropdownMenu(
-                    [dbc.DropdownMenuItem(player, id="3_"+player, toggle=True) for player in available_players],
-                    label="Player 3",
-                    id='3_player-dropdown-menu',
-                )
-            ],style={"display": "flex", "flexWrap": "wrap"},),
-        ),
-        dbc.Col(
-            html.Div([
-                dbc.DropdownMenu(
-                    [dbc.DropdownMenuItem(player, id="4_"+player, toggle=True) for player in available_players],
-                    label="Player 4",
-                    id='4_player-dropdown-menu',
-                )
-            ],style={"display": "flex", "flexWrap": "wrap"},),
-        ),
-        dbc.Col(
-            html.Div([
-                dbc.DropdownMenu(
-                    [dbc.DropdownMenuItem(player, id="5_"+player, toggle=True) for player in available_players],
-                    label="Player 5",
-                    id='5_player-dropdown-menu',
-                )
-            ],style={"display": "flex", "flexWrap": "wrap"},),
-        ),
-        dbc.Col(html.H3(["Winrate: ", dbc.Badge(" %", className="ml-1", id="winrate_percentage")]),),
-        ]),
-    dbc.Row(
-        dbc.Col(
-            html.Div(id='team-graph-container',
-                children=[dcc.Graph(id='team-winrate-graph', figure=fig),],
-                style={'display':'none'})
-        )
-    ),
-    dbc.Row(
-        dbc.Col(
-            html.Div(id='team-matches-month-dbc')
-        )
-    ),
-])
+    ],style=style_center))
+    ])
+    return app_layout
 
 #------------------ FUNCTIONS
+def get_available_players():
+    available_players = os.listdir(PLAYER_DIR_PATH)
+    available_players.remove(".gitignore")
+    return available_players
+
 def get_dota_player(player):
     player_dir = os.path.join(PLAYER_DIR_PATH, player)
     dota_player_files = [os.path.join(player_dir, file) for file in os.listdir(player_dir)]
