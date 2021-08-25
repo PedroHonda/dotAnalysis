@@ -130,7 +130,7 @@ def update_output(available_players, players_collapse):
         available_players = get_available_players()
         table_header = [html.Thead(html.Tr([html.Th("Players")]))]
         table_body = [html.Tbody(
-                [html.Tr([html.Td(log)]) for log in available_players]
+                [html.Tr([html.Td(dcc.Link(p, href="/players/"+p))]) for p in available_players]
             )]
         table = dbc.Table(table_header + table_body,
             bordered=True,

@@ -123,7 +123,7 @@ class DotaPlayer:
                 entry["kda"] += "/"+str(match["assists"])
                 entry["hero"] = hero_dict.get(str(match["hero_id"]), str(match["hero_id"]))
                 # "player_slot" > 127 : Dire
-                #  "player_slot" < 128 : Radiant
+                # "player_slot" < 128 : Radiant
                 if match["player_slot"] > 127:
                     entry["side"] = "dire"
                 else:
@@ -136,3 +136,22 @@ class DotaPlayer:
                     entry["win"] = 0
                 simplified.append(entry)
         return simplified
+
+    def get_winrate_info(self):
+        '''
+        Requires player_matches
+        '''
+        win = 0
+        loss = 0
+        if self.player_matches:
+            for match in self.player_matches:
+                # "player_slot" > 127 : Dire
+                # "player_slot" < 128 : Radiant
+                if match["player_slot"] > 127 and not match["radiant_win"]:
+                    win += 1
+                elif match["player_slot"] <= 127 and match["radiant_win"]:
+                    win += 1
+                else:
+                    loss += 1
+            return win, loss
+        return 0, 0
