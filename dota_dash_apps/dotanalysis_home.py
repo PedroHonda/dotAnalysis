@@ -1,19 +1,13 @@
 '''
 '''
-from dota_lib.dota_team import DotaTeam
-import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import json
 import logging
 import os
-import pandas as pd
-import plotly.graph_objects as go
 from dash.dependencies import Input, Output, State
-from datetime import datetime as dtm
 from dota_lib.dota_player import DotaPlayer
-from dota_lib.dota_team import DotaTeam
 from dash_app import app
 
 
@@ -101,8 +95,7 @@ def get_available_players():
 
 def register_player(player_id, player_name):
     dota_player = DotaPlayer(player_id, player_name)
-    if not dota_player.get_player_info(): return
-    if not dota_player.get_matches(): return
+    if not dota_player.get_all(): return
     dota_player.save_data(DOTA_DB_PLAYERS, overwrite_data=True)
 
 #------------------ CALLBACK DEFINITION

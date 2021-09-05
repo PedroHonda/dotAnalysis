@@ -12,6 +12,8 @@ from dota_dash_apps.dotanalysis_winrate import app_layout as winrate_app_layout
 from dota_dash_apps.dotanalysis_home import app_layout as home_app_layout
 from dota_dash_apps.dotanalysis_players import app_layout as players_app_layout
 
+app.title = "DotAnalysis"
+
 app.layout = html.Div([
     dbc.Row([
         dbc.Navbar(
@@ -24,6 +26,7 @@ app.layout = html.Div([
                         dbc.Col(dbc.NavbarBrand("dotAnalysis", className="ml-2")),
                         dbc.Col(dbc.NavLink("Home", href="/", className="nav-link")),
                         dbc.Col(dbc.NavLink("Winrate", href="/winrate", className="nav-link")),
+                        dbc.Col(html.A(html.I("Github",className="fa fa-github"),className="nav-link")),
                     ],
                     align="center",
                     no_gutters=True,

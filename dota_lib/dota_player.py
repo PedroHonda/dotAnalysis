@@ -19,6 +19,8 @@ class DotaPlayer:
         self.player_name = player_name
         self.player_info = []
         self.player_matches = []
+        self.player_wardmap = []
+        self.player_wordcloud = []
 
         logger.info("DotaPlayer created, id=%s", account_id)
 
@@ -47,6 +49,18 @@ class DotaPlayer:
             with open(file_path, 'w', encoding='utf-8') as file:
                 json.dump(self.player_matches, file, ensure_ascii=False, indent=4)
 
+        # Save player_wardmap if available
+        if self.player_wardmap:
+            file_path = os.path.join(player_dir, "player_wardmap.json")
+            with open(file_path, 'w', encoding='utf-8') as file:
+                json.dump(self.player_wardmap, file, ensure_ascii=False, indent=4)
+
+        # Save player_wordcloud if available
+        if self.player_wordcloud:
+            file_path = os.path.join(player_dir, "player_wordcloud.json")
+            with open(file_path, 'w', encoding='utf-8') as file:
+                json.dump(self.player_wordcloud, file, ensure_ascii=False, indent=4)
+
     def load_data(self, dota_player_files):
         '''
         Load data from Dota Player's files given as input
@@ -66,6 +80,14 @@ class DotaPlayer:
                 with open(dota_player_file) as content:
                     self.player_matches = json.load(content)
                 logger.info("player_matches.json loaded successfully!")
+            elif os.path.basename(dota_player_file) == "player_wardmap.json":
+                with open(dota_player_file) as content:
+                    self.player_wardmap = json.load(content)
+                logger.info("player_wardmap.json loaded successfully!")
+            elif os.path.basename(dota_player_file) == "player_wordcloud.json":
+                with open(dota_player_file) as content:
+                    self.player_wordcloud = json.load(content)
+                logger.info("player_wordcloud.json loaded successfully!")
 
     def get_player_info(self):
         '''
@@ -96,6 +118,44 @@ class DotaPlayer:
             logger.error("Check if account ID %s is valid", self.account_id)
             return False
         self.player_matches = json.loads(player_matches_response.text)
+        return True
+
+    def get_wardmap(self):
+        '''
+        Query https://api.opendota.com/api/players/<account_id>/wardmap
+        Player's history of wardmap
+        '''
+        link = "https://api.opendota.com/api/players/"+str(self.account_id)+"/wardmap"
+        player_wardmap_response = requests.get(link)
+        if player_wardmap_response.status_code != 200:
+            logger.error("Error querying player wardmap for ID %s", self.account_id)
+            logger.error("Check if account ID %s is valid", self.account_id)
+            return False
+        self.player_wardmap = json.loads(player_wardmap_response.text)
+        return True
+
+    def get_wordcloud(self):
+        '''
+        Query https://api.opendota.com/api/players/<account_id>/wordcloud
+        Player's history of wordcloud
+        '''
+        link = "https://api.opendota.com/api/players/"+str(self.account_id)+"/wordcloud"
+        player_wordcloud_response = requests.get(link)
+        if player_wordcloud_response.status_code != 200:
+            logger.error("Error querying player wordcloud for ID %s", self.account_id)
+            logger.error("Check if account ID %s is valid", self.account_id)
+            return False
+        self.player_wordcloud = json.loads(player_wordcloud_response.text)
+        return True
+
+    def get_all(self):
+        '''
+        Combined method of all GET data methods available
+        '''
+        if not self.get_player_info(): return False
+        if not self.get_matches(): return False
+        if not self.get_wardmap(): return False
+        if not self.get_wordcloud(): return False
         return True
 
     def simplified_matches(self, hero_dict=None):
