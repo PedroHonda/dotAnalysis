@@ -175,11 +175,11 @@ def get_team_match_details_per_month_by_player_table_dbc(date):
     sdf = get_team_simplified_matches_df(dota_team_obj)
     date_flt = str(date.year)+"-"+str(date.month)
 
-    matches_month = sdf.loc[date_flt][['match_id', 'kda', 'hero', 'side', 'win']]
+    matches_month = sdf.loc[date_flt][['match_id', 'side', 'win']]
     matches_month.index = matches_month.index.strftime("%Y-%m-%d")
     matches_month["date"] = matches_month.index
     #return dbc.Table.from_dataframe(matches_month)
-    simplified_matches_columns = ["#", "date", "match_id", "kda", "side", "hero", "win"]
+    simplified_matches_columns = ["#", "date", "match_id", "side", "win"]
     table_header = [
         html.Thead(html.Tr([html.Th(h) for h in simplified_matches_columns]))
     ]
@@ -194,9 +194,7 @@ def get_team_match_details_per_month_by_player_table_dbc(date):
                 html.Td(idx),
                 html.Td(match["date"]),
                 html.Td(dcc.Link(match_id_link, href=match_id_link)),
-                html.Td(match["kda"]),
                 html.Td(match["side"]),
-                html.Td(match["hero"]),
                 html.Td(match["win"])
             ]))
 

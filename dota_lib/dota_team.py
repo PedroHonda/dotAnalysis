@@ -52,7 +52,7 @@ class DotaTeam:
             logger.info("Team's matches updated")
             self.winrate = self.get_team_winrate()
             logger.info("Team's winrate updated")
-    
+
     def get_team_simplified_matches(self):
         '''
         Use current dota_team's players info to generate a list of matches with key information:
@@ -83,8 +83,6 @@ class DotaTeam:
         simplified_matches_final = []
         for match in simplified_matches:
             if match["match_id"] in team_matches_id:
-                match["hero"] = "---"
-                match["kda"] = "---"
                 simplified_matches_final.append(match)
         return simplified_matches_final
 
@@ -101,3 +99,36 @@ class DotaTeam:
         logger.debug("Dota Team winrate: %s", winrate)
 
         return winrate
+
+    def get_most_played_heroes(self, hero_dict=None):
+        '''
+        Require self.matches to be populated
+        Returns a list of most played heroes by player
+        ------------------------------------------------
+        Input
+        ------------------------------------------------
+        (optional) hero_dict : dictionary to translate hero ID to hero Name
+        ------------------------------------------------
+        Output
+        ------------------------------------------------
+        List : same length as self.dota_team. Each entry will have:
+        - [0] hero (string) : either hero ID or hero Name depending if hero_dict is provided or not
+        - [1] n_matches (integer) : number of matches with this particular hero
+        The list will be ordered by n_matches
+        '''
+        if not self.matches: return []
+        hero_dict = hero_dict or {}
+        most_played_heroes = []
+        # List of all the common Matches from the Team
+        team_matches = [entry["match_id"] for entry in self.matches]
+        for dota_players in self.dota_team:
+            heroes = {}
+            for match in dota_players.player_matches:
+                if match["match_id"] in team_matches:
+                    hero = hero_dict.get(str(match["hero_id"]), str(match["hero_id"]))
+                    if hero not in heroes: heroes[hero] = 1
+                    else: heroes[hero] += 1
+            # Converting to list and sorting items
+            heroes = sorted(heroes.items(), key=lambda item: item[1], reverse=True)
+            most_played_heroes.append(heroes)
+        return most_played_heroes
