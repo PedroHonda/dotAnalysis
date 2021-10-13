@@ -10,7 +10,7 @@ import logging
 import os
 import pandas as pd
 import plotly.graph_objects as go
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from datetime import datetime as dtm
 from dota_lib.dota_player import DotaPlayer
 from dota_lib.dota_team import DotaTeam
@@ -67,6 +67,29 @@ def app_layout():
                 html.Div(id='team_graph_container',
                     children=[dcc.Graph(id='team_winrate_graph', figure=fig),],
                     style={'display':'none'})
+            )
+        ),
+        # ADDITIONAL INFO
+        dbc.Row(
+            html.Label("More", id='more')
+        ),
+        dbc.Row(html.Hr()),
+        dbc.Row(
+            dbc.Collapse(
+                dbc.Card([
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                [],
+                                className="card-text",
+                                id="more-card",
+                                style={"text-align":"left"}
+                            ),
+                        ]
+                    ),
+                ], color='dark'),
+                id="more-collapse",
+                is_open=False,
             )
         ),
         dbc.Row([
@@ -203,6 +226,12 @@ def get_most_played_heroes():
 
     return tuple(most_played_heroes_tables)
 
+def get_team_info():
+    global dota_team_obj
+    wins = sum([result["win"] for result in dota_team_obj.matches])
+    losses = len(dota_team_obj.matches) - wins
+    team_info = ["Wins: "+str(wins), html.Br(), "Losses: "+str(losses)]
+    return (team_info,)
 #------------------ CALLBACK DEFINITION
 @app.callback(
     [
@@ -211,7 +240,8 @@ def get_most_played_heroes():
         Output('team_winrate_percentage', 'children'),
     ]+
     [   Output(str(idx)+"_player-dropdown-menu_team", "label") for idx in range(1,6) ] +
-    [   Output(str(idx)+"_heroes", "children") for idx in range(1,6)]
+    [   Output(str(idx)+"_heroes", "children") for idx in range(1,6) ] +
+    [   Output('more-card', 'children')    ]
     
     ,
 
@@ -237,4 +267,14 @@ def plot_winrate_team_dbc(*args):
     fig, winrate = get_winrate_fig_by_team(players)
     
     return (display, fig, "{:10.2f}".format(winrate)+" %",
-        players[0], players[1], players[2], players[3], players[4])+get_most_played_heroes()
+        players[0], players[1], players[2], players[3], players[4])+get_most_played_heroes()+get_team_info()
+
+@app.callback(
+    Output('more-collapse', 'is_open'),
+    Input('more', 'n_clicks'),
+    State('more-collapse', 'is_open')
+)
+def advanced_settings_callback(n, collapse_is_open):
+    if n is not None:
+        return not collapse_is_open
+    return dash.no_update
