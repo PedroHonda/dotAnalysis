@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import requests
+import time
 from datetime import datetime as dtm
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ class DotaPlayer:
         self.player_matches = []
         self.player_wardmap = []
         self.player_wordcloud = []
+        self.data_info = {}
 
         logger.info("DotaPlayer created, id=%s", account_id)
 
@@ -29,7 +31,8 @@ class DotaPlayer:
         Save all data from DotaPlayer to self.output_path
         '''
         # Create a folder for the specific player
-        player_dir = os.path.join(output_path, self.player_name+"_"+str(self.account_id))
+        player_dir = os.path.join(output_path,
+            self.player_name.replace(" ", "_")+"_"+str(self.account_id))
         if not os.path.isdir(player_dir):
             os.mkdir(player_dir)
         elif os.path.isdir(player_dir) and not overwrite_data:
@@ -61,6 +64,12 @@ class DotaPlayer:
             with open(file_path, 'w', encoding='utf-8') as file:
                 json.dump(self.player_wordcloud, file, ensure_ascii=False, indent=4)
 
+        # Save data_info if available
+        if self.data_info:
+            file_path = os.path.join(player_dir, "data_info.json")
+            with open(file_path, 'w', encoding='utf-8') as file:
+                json.dump(self.data_info, file, ensure_ascii=False, indent=4)
+
     def load_data(self, dota_player_files):
         '''
         Load data from Dota Player's files given as input
@@ -88,6 +97,10 @@ class DotaPlayer:
                 with open(dota_player_file) as content:
                     self.player_wordcloud = json.load(content)
                 logger.info("player_wordcloud.json loaded successfully!")
+            elif os.path.basename(dota_player_file) == "data_info.json":
+                with open(dota_player_file) as content:
+                    self.data_info = json.load(content)
+                logger.info("data_info.json loaded successfully!")
 
     def get_player_info(self):
         '''
@@ -104,6 +117,7 @@ class DotaPlayer:
         if not self.player_name:
             self.player_name = self.player_info["profile"]["personaname"]
             logger.info("Getting player_name from player_info: %s", self.player_name)
+        self.data_info["Last Updated"] = time.strftime("%Y-%m-%d")
         return True
 
     def get_matches(self):
@@ -118,6 +132,7 @@ class DotaPlayer:
             logger.error("Check if account ID %s is valid", self.account_id)
             return False
         self.player_matches = json.loads(player_matches_response.text)
+        self.data_info["Last Updated"] = time.strftime("%Y-%m-%d")
         return True
 
     def get_wardmap(self):
@@ -132,6 +147,7 @@ class DotaPlayer:
             logger.error("Check if account ID %s is valid", self.account_id)
             return False
         self.player_wardmap = json.loads(player_wardmap_response.text)
+        self.data_info["Last Updated"] = time.strftime("%Y-%m-%d")
         return True
 
     def get_wordcloud(self):
@@ -146,6 +162,7 @@ class DotaPlayer:
             logger.error("Check if account ID %s is valid", self.account_id)
             return False
         self.player_wordcloud = json.loads(player_wordcloud_response.text)
+        self.data_info["Last Updated"] = time.strftime("%Y-%m-%d")
         return True
 
     def get_all(self):
@@ -156,6 +173,7 @@ class DotaPlayer:
         if not self.get_matches(): return False
         if not self.get_wardmap(): return False
         if not self.get_wordcloud(): return False
+        self.data_info["Last Updated"] = time.strftime("%Y-%m-%d")
         return True
 
     def simplified_matches(self, hero_dict=None):
