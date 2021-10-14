@@ -100,6 +100,36 @@ class DotaTeam:
 
         return winrate
 
+    def get_team_radiant_winrate_matches(self):
+        '''
+        Require self.matches to be populated
+        Returns winrate % and total number of matches as radiant
+        '''
+        # If self.matches is not populated, return 0.0
+        if not self.matches: return 0.0, 0.0
+        radiant_matches = [match for match in self.matches if match['side']=='radiant']
+        n_of_matches = len(radiant_matches)
+        win_matches = sum([result["win"] for result in radiant_matches])
+        winrate = 100*win_matches/n_of_matches
+        logger.debug("Dota Team Radiant winrate: %s", winrate)
+
+        return winrate, n_of_matches
+
+    def get_team_dire_winrate_matches(self):
+        '''
+        Require self.matches to be populated
+        Returns winrate % and total number of matches as dire
+        '''
+        # If self.matches is not populated, return 0.0
+        if not self.matches: return 0.0, 0.0
+        dire_matches = [match for match in self.matches if match['side']=='dire']
+        n_of_matches = len(dire_matches)
+        win_matches = sum([result["win"] for result in dire_matches])
+        winrate = 100*win_matches/n_of_matches
+        logger.debug("Dota Team Dire winrate: %s", winrate)
+
+        return winrate, n_of_matches
+
     def get_most_played_heroes(self, hero_dict=None):
         '''
         Require self.matches to be populated

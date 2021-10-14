@@ -230,7 +230,15 @@ def get_team_info():
     global dota_team_obj
     wins = sum([result["win"] for result in dota_team_obj.matches])
     losses = len(dota_team_obj.matches) - wins
-    team_info = ["Wins: "+str(wins), html.Br(), "Losses: "+str(losses)]
+    team_info = ["Wins: "+str(wins), html.Br(), "Losses: "+str(losses), html.Br()]
+    radiant_winrate, radiant_matches = dota_team_obj.get_team_radiant_winrate_matches()
+    radiant_winrate = "{:10.2f}".format(radiant_winrate)
+    dire_winrate, dire_matches = dota_team_obj.get_team_dire_winrate_matches()
+    dire_winrate = "{:10.2f}".format(dire_winrate)
+    team_info.append("Radiant Winrate: "+str(radiant_winrate)+"%, Matches: "+str(radiant_matches))
+    team_info.append(html.Br())
+    team_info.append("Dire Winrate: "+str(dire_winrate)+"%, Matches: "+str(dire_matches))
+    team_info.append(html.Br())
     return (team_info,)
 #------------------ CALLBACK DEFINITION
 @app.callback(
