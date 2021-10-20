@@ -211,10 +211,13 @@ def get_most_played_heroes():
     most_played_heroes_list = dota_team_obj.get_most_played_heroes(heroes_dict)
     most_played_heroes_tables = [[]]*5
     table_header = [
-        html.Thead(html.Tr([html.Th("Hero"), html.Th("# Matches")]))
+        html.Thead(html.Tr([html.Th("Hero"), html.Th("Matches"), html.Th("Winrate")]))
     ]
     for idx, most_played_heroes in enumerate(most_played_heroes_list):
-        rows = [html.Tr([html.Td(hero[0]), html.Td(hero[1])]) for hero in most_played_heroes]
+        rows = [html.Tr([html.Td(hero[0]),
+                html.Td(hero[1][0]),
+                html.Td("{:10.2f}".format(100*hero[1][1] / hero[1][0]))])
+                for hero in most_played_heroes]
         table_body = [html.Tbody(rows)]
         table = dbc.Table(table_header + table_body,
             bordered=True,

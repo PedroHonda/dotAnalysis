@@ -143,7 +143,9 @@ class DotaTeam:
         ------------------------------------------------
         List : same length as self.dota_team. Each entry will have:
         - [0] hero (string) : either hero ID or hero Name depending if hero_dict is provided or not
-        - [1] n_matches (integer) : number of matches with this particular hero
+        - [1] list of:
+        -- [0] n_matches (integer) : number of matches with this particular hero
+        -- [1] wins (integer) : number of wins with this particular hero
         The list will be ordered by n_matches
         '''
         if not self.matches: return []
@@ -153,12 +155,13 @@ class DotaTeam:
         team_matches = [entry["match_id"] for entry in self.matches]
         for dota_players in self.dota_team:
             heroes = {}
-            for match in dota_players.player_matches:
+            for match in dota_players.simplified_matches():
                 if match["match_id"] in team_matches:
-                    hero = hero_dict.get(str(match["hero_id"]), str(match["hero_id"]))
-                    if hero not in heroes: heroes[hero] = 1
-                    else: heroes[hero] += 1
+                    hero = hero_dict.get(str(match["hero"]), str(match["hero"]))
+                    if hero not in heroes: heroes[hero] = [1, 0]
+                    else: heroes[hero][0] += 1
+                    heroes[hero][1] += match["win"]
             # Converting to list and sorting items
-            heroes = sorted(heroes.items(), key=lambda item: item[1], reverse=True)
+            heroes = sorted(heroes.items(), key=lambda item: item[1][0], reverse=True)
             most_played_heroes.append(heroes)
         return most_played_heroes
