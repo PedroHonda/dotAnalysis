@@ -1,11 +1,10 @@
 '''
 '''
-import dash_core_components as dcc
-import dash_html_components as html
 import dash_bootstrap_components as dbc
 import json
 import logging
 import os
+from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dota_lib.dota_player import DotaPlayer
 from dash_app import app

@@ -1,14 +1,13 @@
 '''
 '''
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
 import dash_bootstrap_components as dbc
 import json
 import logging
 import os
 import queue
 import threading
+from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dota_lib.dota_player import DotaPlayer
 from dash_app import app
@@ -134,13 +133,13 @@ def app_layout():
                     dbc.Row([
                         dbc.Col(
                             dbc.InputGroup([
-                                dbc.InputGroupAddon("Player ID", addon_type="prepend"),
+                                dbc.InputGroup("Player ID"),
                                 dbc.Input(placeholder="", id='player-id', style={'color': 'white'}),
                             ]),
                         ),
                         dbc.Col(
                             dbc.InputGroup([
-                                dbc.InputGroupAddon("Player Name", addon_type="prepend"),
+                                dbc.InputGroup("Player Name"),
                                 dbc.Input(placeholder="(optional)", id='player-name', style={'color': 'white'}),
                             ]),
                         ),
@@ -228,7 +227,7 @@ def update_output(available_players, players_collapse):
         Output('trigger', 'disabled'),
         Output('trigger', 'n_intervals'),
         Output("progress", "value"),
-        Output("progress", "children"),
+        Output("progress", "label"),
     ],
     [
         Input('update-all', 'n_clicks'),

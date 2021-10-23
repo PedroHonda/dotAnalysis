@@ -2,14 +2,13 @@
 '''
 from dota_lib.dota_team import DotaTeam
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
 import dash_bootstrap_components as dbc
 import json
 import logging
 import os
 import pandas as pd
 import plotly.graph_objects as go
+from dash import html, dcc
 from dash.dependencies import Input, Output
 from datetime import datetime as dtm
 from dota_lib.dota_player import DotaPlayer

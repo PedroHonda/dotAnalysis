@@ -1,6 +1,5 @@
 import dash_bootstrap_components as dbc
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import html, dcc
 from dash.dependencies import Input, Output
 
 from dash_app import app
@@ -32,7 +31,6 @@ app.layout = html.Div([
                         dbc.Col(html.A(html.I("Github",className="fa fa-github"),className="nav-link")),
                     ],
                     align="center",
-                    no_gutters=True,
                 ),
                 href="https://github.com/pedrohonda/dotanalysis",
                 className="navbar-brand",
