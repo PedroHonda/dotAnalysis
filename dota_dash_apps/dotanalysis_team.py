@@ -208,10 +208,11 @@ def get_winrate_fig_by_team(team):
 def get_most_played_heroes():
     global dota_team_obj
     most_played_heroes_list = dota_team_obj.get_most_played_heroes(heroes_dict)
-    most_played_heroes_tables = [[]]*5
     table_header = [
         html.Thead(html.Tr([html.Th("Hero"), html.Th("Matches"), html.Th("Winrate")]))
     ]
+    table = dbc.Table(table_header,bordered=True,dark=True,hover=True,responsive=True,striped=True)
+    most_played_heroes_tables = [[table]]*5
     for idx, most_played_heroes in enumerate(most_played_heroes_list):
         rows = [html.Tr([html.Td(hero[0]),
                 html.Td(hero[1][0]),

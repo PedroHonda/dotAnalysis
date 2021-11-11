@@ -5,9 +5,9 @@ Refer to OpenDota API official documentation: https://docs.opendota.com/
 import json
 import logging
 import os
-import requests
 import time
 from datetime import datetime as dtm
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,15 @@ class DotaPlayer:
         self.data_info = {}
 
         logger.info("DotaPlayer created, id=%s", account_id)
+
+    def __repr__(self) -> str:
+        return "DotaPlayer('{}', '{}')".format(self.account_id, self.player_name)
+
+    def __str__(self) -> str:
+        return "{} - {}".format(self.account_id, self.player_name)
+
+    def __len__(self) -> int:
+        return len(self.player_matches)
 
     def save_data(self, output_path, overwrite_data=True):
         '''
@@ -70,11 +79,18 @@ class DotaPlayer:
             with open(file_path, 'w', encoding='utf-8') as file:
                 json.dump(self.data_info, file, ensure_ascii=False, indent=4)
 
+    def load_data_path(self, dota_player_files_path):
+        '''
+        Load data from Dota Player's files inside given dota_player_files_path
+        '''
+        logger.info("load_data_path called for path %s", dota_player_files_path)
+        self.load_data(os.listdir(dota_player_files_path))
+
     def load_data(self, dota_player_files):
         '''
         Load data from Dota Player's files given as input
         '''
-        logger.debug("Loading data from files: %s", dota_player_files)
+        logger.info("Loading data from files: %s", dota_player_files)
         for dota_player_file in dota_player_files:
             if os.path.basename(dota_player_file) == "player_info.json":
                 logger.debug(dota_player_file)
@@ -109,6 +125,11 @@ class DotaPlayer:
         '''
         link = "https://api.opendota.com/api/players/"+str(self.account_id)
         player_info_response = requests.get(link)
+        if player_info_response.status_code == 429:
+            logger.warning("HTTP error 429 received, waiting 70 seconds...")
+            time.sleep(70)
+            logger.info("70 seconds timer expired, trying to query data again")
+            player_info_response = requests.get(link)
         if player_info_response.status_code != 200:
             logger.error("Error querying player info for ID %s", self.account_id)
             logger.error("Check if account ID %s is valid", self.account_id)
@@ -127,6 +148,11 @@ class DotaPlayer:
         '''
         link = "https://api.opendota.com/api/players/"+str(self.account_id)+"/matches"
         player_matches_response = requests.get(link)
+        if player_matches_response.status_code == 429:
+            logger.warning("HTTP error 429 received, waiting 70 seconds...")
+            time.sleep(70)
+            logger.info("70 seconds timer expired, trying to query data again")
+            player_matches_response = requests.get(link)
         if player_matches_response.status_code != 200:
             logger.error("Error querying player info for ID %s", self.account_id)
             logger.error("Check if account ID %s is valid", self.account_id)
@@ -142,6 +168,11 @@ class DotaPlayer:
         '''
         link = "https://api.opendota.com/api/players/"+str(self.account_id)+"/wardmap"
         player_wardmap_response = requests.get(link)
+        if player_wardmap_response.status_code == 429:
+            logger.warning("HTTP error 429 received, waiting 70 seconds...")
+            time.sleep(70)
+            logger.info("70 seconds timer expired, trying to query data again")
+            player_wardmap_response = requests.get(link)
         if player_wardmap_response.status_code != 200:
             logger.error("Error querying player wardmap for ID %s", self.account_id)
             logger.error("Check if account ID %s is valid", self.account_id)
@@ -157,6 +188,11 @@ class DotaPlayer:
         '''
         link = "https://api.opendota.com/api/players/"+str(self.account_id)+"/wordcloud"
         player_wordcloud_response = requests.get(link)
+        if player_wordcloud_response.status_code == 429:
+            logger.warning("HTTP error 429 received, waiting 70 seconds...")
+            time.sleep(70)
+            logger.info("70 seconds timer expired, trying to query data again")
+            player_wordcloud_response = requests.get(link)
         if player_wordcloud_response.status_code != 200:
             logger.error("Error querying player wordcloud for ID %s", self.account_id)
             logger.error("Check if account ID %s is valid", self.account_id)
@@ -169,10 +205,14 @@ class DotaPlayer:
         '''
         Combined method of all GET data methods available
         '''
-        if not self.get_player_info(): return False
-        if not self.get_matches(): return False
-        if not self.get_wardmap(): return False
-        if not self.get_wordcloud(): return False
+        if not self.get_player_info():
+            return False
+        if not self.get_matches():
+            return False
+        if not self.get_wardmap():
+            return False
+        if not self.get_wordcloud():
+            return False
         self.data_info["Last Updated"] = time.strftime("%Y-%m-%d")
         return True
 

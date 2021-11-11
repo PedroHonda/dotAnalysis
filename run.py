@@ -9,12 +9,12 @@ from dota_lib.dota_matches import DotaMatch
 
 # Logging information
 TIME_TAG = time.strftime("%Y_%m_%d-%H_%M_%S")
-logName = "./logs/dota_log_" + TIME_TAG + ".txt"
+logName = "./logs/run.log"
 logging.basicConfig(filename=logName,
     level=logging.DEBUG,
     format='%(asctime)s.%(msecs)03d %(levelname).1s\t\t%(filename)s[%(lineno)d] : %(message)s',
     datefmt='%d-%m-%y %H:%M:%S',
-    filemode='w')
+    filemode='a')
 
 # Static paths
 CWD = os.getcwd()

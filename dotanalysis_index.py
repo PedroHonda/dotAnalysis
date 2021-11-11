@@ -1,4 +1,5 @@
 import dash_bootstrap_components as dbc
+import logging
 from dash import html, dcc
 from dash.dependencies import Input, Output
 
@@ -12,6 +13,14 @@ from dota_dash_apps.dotanalysis_winrate import app_layout as winrate_app_layout
 from dota_dash_apps.dotanalysis_home import app_layout as home_app_layout
 from dota_dash_apps.dotanalysis_players import app_layout as players_app_layout
 from dota_dash_apps.dotanalysis_team import app_layout as team_app_layout
+
+# Logging information
+logName = "./logs/dotanalysis_index.log"
+logging.basicConfig(filename=logName,
+    level=logging.DEBUG,
+    format='%(asctime)s.%(msecs)03d %(levelname).1s\t\t%(filename)s[%(lineno)d] : %(message)s',
+    datefmt='%d-%m-%y %H:%M:%S',
+    filemode='a')
 
 app.title = "DotAnalysis"
 
