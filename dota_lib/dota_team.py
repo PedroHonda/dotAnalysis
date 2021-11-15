@@ -148,6 +148,7 @@ class DotaTeam:
         -- [1] wins (integer) : number of wins with this particular hero
         The list will be ordered by n_matches
         '''
+        logger.info("get_most_played_heroes called")
         if not self.matches: return []
         hero_dict = hero_dict or {}
         most_played_heroes = []

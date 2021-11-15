@@ -11,43 +11,23 @@ import plotly.graph_objects as go
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from datetime import datetime as dtm
-from dota_lib.dota_player import DotaPlayer
 from dota_lib.dota_team import DotaTeam
 from dash_app import app
+from dota_dash_apps.dotanalysis_dash_components import style_center
+from dotanalysis_control.dta import get_available_players, get_dota_player, heroes_dict
 
-#------------------ Logging information
+################ Logging information
 logger = logging.getLogger(__name__)
 
-#------------------ STATIC DB QUERIES
-cwd = os.getcwd()
-PLAYER_DIR_PATH = os.path.join(cwd, 'dota_db', 'players')
-available_players = os.listdir(os.path.join(cwd, "dota_db", "players"))
-available_players.remove(".gitignore")
-available_players.append("All")
-available_players.append("<Empty>")
-
-with open(os.path.join(cwd, "dota_db", "heroes", "heroes_dict.json")) as content:
-    heroes_dict = json.load(content)
-
-#------------------ CSS STYLES
-style_center = {
-        "width":"1700px",
-        "max-width":"1700px",
-        "display":"inline-block",
-        "margin-left":"auto",
-        "margin-right":"auto"}
-style_logo = {
-        "width":"100px",
-        "max-width":"100px",}
-
-#------------------ DOTA TEAM
+################ GLOBAL
+available_players = get_available_players()
 dota_team_obj = DotaTeam()
 
-#------------------ PLOTLY FIG
+################ PLOTLY FIG
 layout = go.Layout(uirevision = 'value', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
 fig = go.Figure(layout = layout)
 
-#------------------ APP LAYOUT
+################ APP LAYOUT
 def app_layout():
     app_layout = html.Div([
         
@@ -157,19 +137,7 @@ def app_layout():
     ])
     return app_layout
 
-#------------------ FUNCTIONS
-def get_available_players():
-    available_players = os.listdir(PLAYER_DIR_PATH)
-    available_players.remove(".gitignore")
-    return available_players
-
-def get_dota_player(player):
-    player_dir = os.path.join(PLAYER_DIR_PATH, player)
-    dota_player_files = [os.path.join(player_dir, file) for file in os.listdir(player_dir)]
-    dota_player = DotaPlayer()
-    dota_player.load_data(dota_player_files)
-    return dota_player
-
+################ FUNCTIONS
 def get_team_simplified_matches_df(dota_team):
     simplified_matches = dota_team.matches
     sdf = pd.DataFrame(simplified_matches)
@@ -243,7 +211,8 @@ def get_team_info():
     team_info.append("Dire Winrate: "+str(dire_winrate)+"%, Matches: "+str(dire_matches))
     team_info.append(html.Br())
     return (team_info,)
-#------------------ CALLBACK DEFINITION
+
+################ CALLBACK DEFINITION
 @app.callback(
     [
         Output('team_graph_container', 'style'),
