@@ -38,7 +38,7 @@ def register_player(player_id, player_name):
     dota_player.save_data(DOTA_DB_PLAYERS, overwrite_data=True)
 
 def update_all(queue=None):
-    update_all_thread = threading.Thread(target=update_all_t, args=(queue))
+    update_all_thread = threading.Thread(target=update_all_t, kwargs={'queue':queue})
     update_all_thread.start()
 
 def update_all_t(queue=None):

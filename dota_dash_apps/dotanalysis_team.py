@@ -52,7 +52,7 @@ def app_layout():
         dbc.Row(
             html.Label("More", id='more')
         ),
-        dbc.Row(html.Hr()),
+        html.Hr(),
         dbc.Row(
             dbc.Collapse(
                 dbc.Card([
@@ -71,6 +71,7 @@ def app_layout():
                 is_open=False,
             )
         ),
+        html.Br(),
         dbc.Row([
             dbc.Col([
                 dbc.Row([

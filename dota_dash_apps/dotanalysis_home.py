@@ -4,12 +4,12 @@ import dash
 import dash_bootstrap_components as dbc
 import logging
 import queue
-import threading
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dash_app import app
-from dota_dash_apps.dotanalysis_dash_components import style_center, style_update, players_table
-from dotanalysis_control.dta import get_available_players, register_player
+from dota_dash_apps.dotanalysis_dash_components import (style_center, style_update,
+    style_register_box, players_table)
+from dotanalysis_control.dta import register_player, update_all
 
 ################ Logging information
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def app_layout():
                     dbc.Row([
                         dbc.Col(
                             dbc.InputGroup([
-                                dbc.InputGroup("Player ID"),
+                                dbc.InputGroup("Player ID / Link"),
                                 dbc.Input(placeholder="", id='player-id', style={'color': 'white'}),
                             ]),
                         ),
@@ -51,12 +51,11 @@ def app_layout():
         ),
         html.Br(),
         dbc.Row(
-            dbc.Button("Available Players",
+            html.Label("Available Players",
                 id="available-players",
-                color="primary",
-                className="mr-1"
             )
         ),
+        html.Hr(),
         html.Br(),
         dbc.Row(
             html.Div(
@@ -74,7 +73,7 @@ def app_layout():
             ),
             dbc.Col(
                 dbc.Fade(
-                    dbc.Button("OK", className="btn-info disabled"),
+                    dbc.Button("OK", className="btn-outline-success disabled"),
                     id="ok-fade",
                     is_in=False,
                     appear=False,
@@ -86,29 +85,10 @@ def app_layout():
             dbc.Progress(id="progress", striped=True, animated=True),
         ),
         dcc.Interval(id="trigger", n_intervals=0, interval=1000, disabled=True),
-    ],style=style_center))
+    ],style=style_register_box))
     return app_layout
 
 ################ FUNCTIONS
-def update_all():
-    update_all_thread = threading.Thread(target=update_all_t)
-    update_all_thread.start()
-
-def update_all_t():
-    available_players = get_available_players()
-    progress_aux_old = 0
-    available_players_length = len(available_players)
-    for idx, players in enumerate(available_players):
-        split = players.split("_")
-        id = split[-1]
-        name = "_".join(split[:-1])
-        register_player(id, name)
-        progress_aux = int((100 * idx) / available_players_length)
-        if progress_aux > progress_aux_old and progress_aux <= 100:
-            dash_queue.put(progress_aux)
-            progress_aux_old = progress_aux
-    dash_queue.put(("status", "finished"))
-
 def trigger_queue():
     ok_fade = dash.no_update
     trigger = dash.no_update
@@ -139,6 +119,8 @@ def trigger_queue():
 )
 def register_player_callback(register, player_id, player_name):
     if register is not None:
+        # Workaround to accept dotabuff/opendota link
+        player_id = player_id.split('/')[-1]
         register_player(player_id, player_name)
         return "", ""
     return player_id, player_name
@@ -172,6 +154,6 @@ def update_all_players(update_all_btn, trigger):
     if trigger:
         return trigger_queue()
     if update_all_btn is not None:
-        update_all()
+        update_all(dash_queue)
         return dash.no_update, None, False, 0, dash.no_update, dash.no_update
     return (dash.no_update,)*6

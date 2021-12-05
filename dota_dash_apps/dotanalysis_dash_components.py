@@ -16,15 +16,21 @@ style_center = {
     "margin-right":"auto"
 }
 style_update = {
-    "width":"1500px",
-    "max-width":"1500px",
+    "width":"700px",
+    "max-width":"700px",
     "display":"inline-block",
     "margin-left":"auto",
     "margin-right":"auto"
 }
 style_logo = {
-        "width":"100px",
-        "max-width":"100px",}
+    "width":"100px",
+    "max-width":"100px",
+}
+style_register_box = {
+    "width":"800px",
+    "margin-left":"auto",
+    "margin-right":"auto"
+}
 
 def players_table():
     t_header = ["Player", "Last Updated"]
