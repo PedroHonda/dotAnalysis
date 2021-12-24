@@ -7,12 +7,11 @@ from dash_app import app
 from dota_dash_apps import dotanalysis_winrate as app_winrate
 from dota_dash_apps import dotanalysis_home as app_home
 from dota_dash_apps import dotanalysis_players as app_players
-from dota_dash_apps import dotanalysis_team as app_team
+from dota_dash_apps import dotanalysis_team
 
 from dota_dash_apps.dotanalysis_winrate import app_layout as winrate_app_layout
 from dota_dash_apps.dotanalysis_home import app_layout as home_app_layout
 from dota_dash_apps.dotanalysis_players import app_layout as players_app_layout
-from dota_dash_apps.dotanalysis_team import app_layout as team_app_layout
 
 # Logging information
 logName = "./logs/dotanalysis_index.log"
@@ -65,8 +64,7 @@ def display_page(pathname):
         app_players.layout = players_app_layout(pathname.split("/players/")[1])
         return app_players.layout
     elif '/team' in pathname:
-        app_team.layout = team_app_layout()
-        return app_team.layout
+        return dotanalysis_team.app_layout
     else:
         app_home.layout = home_app_layout()
         return app_home.layout

@@ -3,7 +3,10 @@ DotaTeam class that groups up to 5 DotaPlayer objects to gather information abou
 the team as a whole, e.g. winrate together
 '''
 import logging
+import pandas as pd
+import plotly.graph_objects as go
 from dota_lib.dota_player import DotaPlayer
+from datetime import datetime as dtm
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +89,19 @@ class DotaTeam:
                 simplified_matches_final.append(match)
         return simplified_matches_final
 
+    def get_team_simplified_matches_df(self):
+        '''
+        Returns self.matches into a Pandas DataFrame format.
+        If self.matches is empty, returns null
+        '''
+        if self.matches:
+            simplified_matches = self.matches
+            sdf = pd.DataFrame(simplified_matches)
+            sdf.index = sdf.date
+            sdf["match"]=1
+            return sdf
+        return []
+
     def get_team_winrate(self):
         '''
         Require self.matches to be populated
@@ -110,7 +126,10 @@ class DotaTeam:
         radiant_matches = [match for match in self.matches if match['side']=='radiant']
         n_of_matches = len(radiant_matches)
         win_matches = sum([result["win"] for result in radiant_matches])
-        winrate = 100*win_matches/n_of_matches
+        if n_of_matches:
+            winrate = 100*win_matches/n_of_matches
+        else:
+            winrate = 0.0
         logger.debug("Dota Team Radiant winrate: %s", winrate)
 
         return winrate, n_of_matches
@@ -125,7 +144,10 @@ class DotaTeam:
         dire_matches = [match for match in self.matches if match['side']=='dire']
         n_of_matches = len(dire_matches)
         win_matches = sum([result["win"] for result in dire_matches])
-        winrate = 100*win_matches/n_of_matches
+        if n_of_matches:
+            winrate = 100*win_matches/n_of_matches
+        else:
+            winrate = 0.0
         logger.debug("Dota Team Dire winrate: %s", winrate)
 
         return winrate, n_of_matches
@@ -166,3 +188,51 @@ class DotaTeam:
             heroes = sorted(heroes.items(), key=lambda item: item[1][0], reverse=True)
             most_played_heroes.append(heroes)
         return most_played_heroes
+
+    def get_most_played_heroes_df(self, hero_dict=None):
+        '''
+        Require self.matches to be populated
+        Returns a list of most played heroes by player
+        ------------------------------------------------
+        Input
+        ------------------------------------------------
+        (optional) hero_dict : dictionary to translate hero ID to hero Name
+        ------------------------------------------------
+        Output
+        ------------------------------------------------
+        List of Pandas DataFrames : same length as self.dota_team. Each entry will have:
+        - pd.DataFrame(data, columns)
+        -- data : list(zip(heroes, n_matches, winrate))
+        -- columns : ["Hero", "Matches", "Winrate"]
+        '''
+        logger.info("get_most_played_heroes_df called")
+        most_played_heroes_list = self.get_most_played_heroes(hero_dict)
+        most_played_heroes_list_df = []
+        for most_played_heroes in most_played_heroes_list:
+            heroes = [a[0] for a in most_played_heroes]
+            n_matches = [a[1][0] for a in most_played_heroes]
+            winrate = ["{:10.2f}".format(100*a[1][1]/a[1][0]) for a in most_played_heroes]
+            mph_df = pd.DataFrame(list(zip(heroes, n_matches, winrate)),
+                                  columns=["Hero", "Matches", "Winrate"])
+            most_played_heroes_list_df.append(mph_df)
+        return most_played_heroes_list_df
+
+    def get_winrate_fig(self):
+        '''
+        Returns a plotly figure with the winrate info
+        '''
+        layout = go.Layout(uirevision = 'value', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        fig = go.Figure(layout = layout)
+
+        if not self.matches:
+            return fig
+
+        sdf = self.get_team_simplified_matches_df()
+        sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
+        sdf_month["winrate"] = 100*sdf_month.win/sdf_month.match
+        month = [dtm(date[0], date[1], 1) for date in sdf_month.index]
+        fig.add_trace(go.Scatter(x=month, y=sdf_month.winrate))
+        fig.layout.xaxis.color = 'white'
+        fig.layout.yaxis.color = 'white'
+
+        return fig

@@ -86,8 +86,8 @@ def app_layout():
             ]),
         dbc.Row(
             dbc.Col(
-                html.Div(id='team-graph-container',
-                    children=[dcc.Graph(id='team-winrate-graph', figure=fig),],
+                html.Div(id='team-graph-container-temp',
+                    children=[dcc.Graph(id='team-winrate-graph-temp', figure=fig),],
                     style={'display':'none'})
             )
         ),
@@ -176,8 +176,8 @@ def get_team_match_details_per_month_by_player_table_dbc(date):
 ################ CALLBACK DEFINITION
 @app.callback(
     [
-        Output('team-graph-container', 'style'),
-        Output('team-winrate-graph', 'figure'),
+        Output('team-graph-container-temp', 'style'),
+        Output('team-winrate-graph-temp', 'figure'),
         Output('winrate_percentage', 'children'),
         Output('1_player-dropdown-menu', 'label'),
         Output('2_player-dropdown-menu', 'label'),
@@ -209,7 +209,7 @@ def plot_winrate_team_dbc(*args):
 
 @app.callback(
     Output('team-matches-month-dbc', 'children'),
-    Input('team-winrate-graph', 'clickData'),
+    Input('team-winrate-graph-temp', 'clickData'),
 )
 def display_click_data_table_dbc(clickData):
     if clickData:

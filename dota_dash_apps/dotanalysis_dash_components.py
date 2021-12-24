@@ -3,7 +3,8 @@
 import dash_bootstrap_components as dbc
 import logging
 from dash import dcc, html
-from dotanalysis_control.dta import (get_available_players, get_dota_player)
+from dotanalysis_control.dta import (get_available_players, get_dota_player, get_dota_team,
+                                     heroes_dict)
 
 ################ Logging information
 logger = logging.getLogger(__name__)
@@ -53,3 +54,32 @@ def players_table():
         responsive=True,
         striped=True,)
     return players_table
+
+def get_players_data(dota_team):
+    dota_team_obj = get_dota_team(dota_team)
+
+    most_played_heroes_list = dota_team_obj.get_most_played_heroes_df(heroes_dict)
+    player_data = [[], [], [], [], []]
+    for idx, player in enumerate(dota_team):
+        player_data[idx].append(dcc.Markdown(f"#### {player}"))
+
+    for idx, mph_df in enumerate(most_played_heroes_list):
+        most_played_heroes_tables = dbc.Table.from_dataframe(mph_df, dark=True, striped=True, bordered=True, hover=True)
+        player_data[idx].append(most_played_heroes_tables)
+
+    return player_data
+
+def get_team_info(dota_team):
+    dota_team_obj = get_dota_team(dota_team)
+    wins = sum([result["win"] for result in dota_team_obj.matches])
+    losses = len(dota_team_obj.matches) - wins
+    team_info = ["Wins: "+str(wins), html.Br(), "Losses: "+str(losses), html.Br()]
+    radiant_winrate, radiant_matches = dota_team_obj.get_team_radiant_winrate_matches()
+    radiant_winrate = "{:10.2f}".format(radiant_winrate)
+    dire_winrate, dire_matches = dota_team_obj.get_team_dire_winrate_matches()
+    dire_winrate = "{:10.2f}".format(dire_winrate)
+    team_info.append("Radiant Winrate: "+str(radiant_winrate)+"%, Matches: "+str(radiant_matches))
+    team_info.append(html.Br())
+    team_info.append("Dire Winrate: "+str(dire_winrate)+"%, Matches: "+str(dire_matches))
+    team_info.append(html.Br())
+    return team_info

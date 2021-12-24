@@ -27,6 +27,16 @@ def get_dota_player(player):
     dota_player.load_data(dota_player_files)
     return dota_player
 
+def get_dota_team(dota_team):
+    dota_team_obj = []
+
+    for player in dota_team:
+        # Get DotaPlayer object per player name/ID
+        dota_player = get_dota_player(player)
+        dota_team_obj.append(dota_player)
+
+    return DotaTeam(dota_team_obj)
+
 def get_available_players():
     available_players = os.listdir(PLAYER_DIR_PATH)
     available_players.remove(".gitignore")
@@ -57,38 +67,3 @@ def update_all_t(queue=None):
             progress_aux_old = progress_aux
     if queue:
         queue.put(("status", "finished"))
-
-def get_team_simplified_matches_df(dota_team):
-    simplified_matches = dota_team.matches
-    sdf = pd.DataFrame(simplified_matches)
-    sdf.index = sdf.date
-    sdf["match"]=1
-    return sdf
-
-def get_winrate_fig_by_team(team, dota_team_obj):
-    dota_team = []
-    available_players = get_available_players()
-    for dota_player in team:
-        dota_player = dota_player.replace("_team", "")
-        if dota_player in ("<Empty>", "All"): continue
-        if dota_player in available_players: dota_team.append(dota_player)
-
-    layout = go.Layout(uirevision = 'value', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-    fig = go.Figure(layout = layout)
-
-    if not dota_team: return fig, 0.0
-
-    for idx, player in enumerate(dota_team):
-        dota_player = get_dota_player(player)
-        dota_team[idx] = dota_player
-
-    dota_team_obj = DotaTeam(dota_team)
-    sdf = get_team_simplified_matches_df(dota_team_obj)
-    sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
-    sdf_month["winrate"] = 100*sdf_month.win/sdf_month.match
-    month = [dtm(date[0], date[1], 1) for date in sdf_month.index]
-    fig.add_trace(go.Scatter(x=month, y=sdf_month.winrate))
-    fig.layout.xaxis.color = 'white'
-    fig.layout.yaxis.color = 'white'
-
-    return fig, dota_team_obj.winrate
