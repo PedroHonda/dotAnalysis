@@ -64,7 +64,11 @@ def get_players_data(dota_team):
         player_data[idx].append(dcc.Markdown(f"#### {player}"))
 
     for idx, mph_df in enumerate(most_played_heroes_list):
-        most_played_heroes_tables = dbc.Table.from_dataframe(mph_df, dark=True, striped=True, bordered=True, hover=True)
+        most_played_heroes_tables = dbc.Table.from_dataframe(mph_df,
+                                                             dark=True,
+                                                             striped=True,
+                                                             bordered=True,
+                                                             hover=True)
         player_data[idx].append(most_played_heroes_tables)
 
     return player_data
@@ -83,3 +87,31 @@ def get_team_info(dota_team):
     team_info.append("Dire Winrate: "+str(dire_winrate)+"%, Matches: "+str(dire_matches))
     team_info.append(html.Br())
     return team_info
+
+def get_monthly_matches_data(dota_team, date):
+    monthly_matches_data = []
+    if dota_team:
+        dota_team_obj = get_dota_team(dota_team)
+        team_matches_month_df = dota_team_obj.get_monthly_matches_df(date)
+
+        if not team_matches_month_df.empty:
+            month = date.strftime("%B")
+            monthly_matches_data.append(
+                dcc.Markdown(f"#### Monthly matches - {month} {str(date.year)}")
+            )
+            team_matches_month_table = dbc.Table.from_dataframe(
+                                    team_matches_month_df,
+                                    dark=True, striped=True, bordered=True, hover=True)
+
+            # thead = team_matches_month_table.children[0].children
+            tbody = team_matches_month_table.children[1].children
+
+            for tr_row in tbody:
+                td = tr_row.children[0].children
+                match_id_link = "https://www.opendota.com/matches/"+str(td)
+                tr_row.children[0].children = dcc.Link(match_id_link, href=match_id_link)
+
+            monthly_matches_data.append(team_matches_month_table)
+            return monthly_matches_data
+
+    return []

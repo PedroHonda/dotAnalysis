@@ -4,10 +4,11 @@ import dash
 import dash_bootstrap_components as dbc
 import logging
 import plotly.graph_objects as go
+from datetime import datetime as dtm
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dash_app import app
-from dota_dash_apps.dotanalysis_dash_components import (style_center, get_players_data, get_team_info)
+from dota_dash_apps.dotanalysis_dash_components import (style_center, get_players_data, get_team_info, get_monthly_matches_data)
 from dotanalysis_control.dta import (get_available_players, get_dota_team)
 
 ################ LOGGING
@@ -56,14 +57,23 @@ app_layout = html.Center(html.Div([
     dbc.Row(
         dbc.Collapse(
             dbc.Card(
-                dbc.CardBody(
-                    html.P(
-                        [],
-                        className="card-text",
-                        id="more-card",
-                        style={"text-align":"left"}
+                dbc.CardBody([
+                    dbc.Row(
+                        html.P(
+                            [],
+                            className="card-text",
+                            id="more-card",
+                            style={"text-align":"left"}
+                        ),
                     ),
-                ),
+                    html.Br(),
+                    dbc.Row(
+                        html.Div(
+                            [],
+                            id="team-matches-month"
+                        )
+                    )
+                ]),
             color='dark'),
             id="more-collapse",
             is_open=False,
@@ -181,3 +191,16 @@ def advanced_settings_callback(n, collapse_is_open):
         return not collapse_is_open
     return dash.no_update
 
+## Get Team's winrate
+@app.callback(
+    Output('team-matches-month', 'children'),
+    Input('team-winrate-graph', 'clickData'),
+    State('dota-team', 'data')
+)
+def display_click_data_table_dbc(clickData, dota_team):
+    if clickData:
+        if dota_team:
+            logging.debug("team_clickData=%s", clickData)
+            date = dtm.strptime(clickData["points"][0]["x"], "%Y-%m-%d")
+            return get_monthly_matches_data(dota_team, date)
+    return []

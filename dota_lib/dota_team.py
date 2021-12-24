@@ -236,3 +236,19 @@ class DotaTeam:
         fig.layout.yaxis.color = 'white'
 
         return fig
+
+    def get_monthly_matches_df(self, date):
+        '''
+        Returns a Pandas DataFrame with matches details on a particular month
+        '''
+        sdf = self.get_team_simplified_matches_df()
+        if sdf.empty:
+            return sdf
+
+        date_flt = str(date.year)+"-"+str(date.month)
+
+        matches_month = sdf.loc[date_flt][['match_id', 'side', 'win']]
+        matches_month.index = matches_month.index.strftime("%Y-%m-%d")
+        matches_month["date"] = matches_month.index
+
+        return matches_month
