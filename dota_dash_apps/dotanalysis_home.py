@@ -18,75 +18,73 @@ logger = logging.getLogger(__name__)
 dash_queue = queue.Queue()
 
 ################ APP LAYOUT
-def app_layout():
-    app_layout = html.Center(html.Div([
-        dbc.Row(
-            dbc.Card([
-                dbc.CardHeader("Register a New Player", className="card-body"),
-                dbc.CardBody([
-                    dbc.Row([
-                        dbc.Col(
-                            dbc.InputGroup([
-                                dbc.InputGroup("Player ID / Link"),
-                                dbc.Input(placeholder="", id='player-id', style={'color': 'white'}),
-                            ]),
-                        ),
-                        dbc.Col(
-                            dbc.InputGroup([
-                                dbc.InputGroup("Player Name"),
-                                dbc.Input(placeholder="(optional)", id='player-name', style={'color': 'white'}),
-                            ]),
-                        ),
-                    ]),
-                    html.Br(),
-                    dbc.Row(
-                        dbc.Button("REGISTER",
-                            id="register-player",
-                            color="primary",
-                            className="mr-1"
-                        )
-                    )
+app_layout = html.Center(html.Div([
+    dbc.Row(
+        dbc.Card([
+            dbc.CardHeader("Register a New Player", className="card-body"),
+            dbc.CardBody([
+                dbc.Row([
+                    dbc.Col(
+                        dbc.InputGroup([
+                            dbc.InputGroup("Player ID / Link"),
+                            dbc.Input(placeholder="", id='player-id', style={'color': 'white'}),
+                        ]),
+                    ),
+                    dbc.Col(
+                        dbc.InputGroup([
+                            dbc.InputGroup("Player Name"),
+                            dbc.Input(placeholder="(optional)", id='player-name', style={'color': 'white'}),
+                        ]),
+                    ),
                 ]),
-            ], className="card text-white mb-3", color="bg-primary")
-        ),
-        html.Br(),
-        dbc.Row(
-            html.Label("Available Players",
-                id="available-players",
-            )
-        ),
-        html.Hr(),
-        html.Br(),
-        dbc.Row(
-            html.Div(
-                dbc.Collapse(
-                    children=players_table(),
-                    id="players-collapse",
-                    is_open=False,
+                html.Br(),
+                dbc.Row(
+                    dbc.Button("REGISTER",
+                        id="register-player",
+                        color="primary",
+                        className="mr-1"
+                    )
                 )
-            ),
-        ),
-        html.Br(),
-        dbc.Row([
-            dbc.Col(
-                dbc.Button("UPDATE ALL PLAYERS", id="update-all", style=style_update, className="btn-success")
-            ),
-            dbc.Col(
-                dbc.Fade(
-                    dbc.Button("OK", className="btn-outline-success disabled"),
-                    id="ok-fade",
-                    is_in=False,
-                    appear=False,
-                ),
+            ]),
+        ], className="card text-white mb-3", color="bg-primary")
+    ),
+    html.Br(),
+    dbc.Row(
+        html.Label("Available Players",
+            id="available-players",
+        )
+    ),
+    html.Hr(),
+    html.Br(),
+    dbc.Row(
+        html.Div(
+            dbc.Collapse(
+                children=players_table(),
+                id="players-collapse",
+                is_open=False,
             )
-        ]),
-        # PROGRESS BAR
-        dbc.Row(
-            dbc.Progress(id="progress", striped=True, animated=True),
         ),
-        dcc.Interval(id="trigger", n_intervals=0, interval=1000, disabled=True),
-    ],style=style_register_box))
-    return app_layout
+    ),
+    html.Br(),
+    dbc.Row([
+        dbc.Col(
+            dbc.Button("UPDATE ALL PLAYERS", id="update-all", style=style_update, className="btn-success")
+        ),
+        dbc.Col(
+            dbc.Fade(
+                dbc.Button("OK", className="btn-outline-success disabled"),
+                id="ok-fade",
+                is_in=False,
+                appear=False,
+            ),
+        )
+    ]),
+    # PROGRESS BAR
+    dbc.Row(
+        dbc.Progress(id="progress", striped=True, animated=True),
+    ),
+    dcc.Interval(id="trigger", n_intervals=0, interval=1000, disabled=True),
+],style=style_register_box))
 
 ################ FUNCTIONS
 def trigger_queue():
@@ -114,8 +112,8 @@ def trigger_queue():
     Output('player-id', 'value'),
     Output('player-name', 'value'),
     Input('register-player', 'n_clicks'),
-    Input('player-id', 'value'),
-    Input('player-name', 'value'),
+    State('player-id', 'value'),
+    State('player-name', 'value'),
 )
 def register_player_callback(register, player_id, player_name):
     if register is not None:

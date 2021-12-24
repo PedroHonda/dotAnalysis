@@ -4,12 +4,9 @@ from dash import html, dcc
 from dash.dependencies import Input, Output
 
 from dash_app import app
-from dota_dash_apps import dotanalysis_home as app_home
-from dota_dash_apps import dotanalysis_players as app_players
+from dota_dash_apps import dotanalysis_home
+from dota_dash_apps import dotanalysis_players
 from dota_dash_apps import dotanalysis_team
-
-from dota_dash_apps.dotanalysis_home import app_layout as home_app_layout
-from dota_dash_apps.dotanalysis_players import app_layout as players_app_layout
 
 # Logging information
 logName = "./logs/dotanalysis_index.log"
@@ -55,13 +52,11 @@ app.layout = html.Div([
               Input('url', 'pathname'))
 def display_page(pathname):
     if '/players/' in pathname:
-        app_players.layout = players_app_layout(pathname.split("/players/")[1])
-        return app_players.layout
+        return dotanalysis_players.app_layout(pathname.split("/players/")[1])
     elif '/team' in pathname:
         return dotanalysis_team.app_layout
     else:
-        app_home.layout = home_app_layout()
-        return app_home.layout
+        return dotanalysis_home.app_layout
 
 if __name__ == '__main__':
     app.run_server(debug=True)
