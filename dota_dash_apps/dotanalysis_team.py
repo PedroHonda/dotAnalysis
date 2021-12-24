@@ -105,7 +105,10 @@ def updating_dota_team(*args):
     dota_team = args[-1]
     n_clicks = [0]*len(AVAILABLE_PLAYERS)
     class_names = [dash.no_update]*len(AVAILABLE_PLAYERS)
-    
+
+    if AVAILABLE_PLAYERS == ["EMPTY"]:
+        return tuple(n_clicks)+tuple(class_names)+(dash.no_update,)
+
     ctx = dash.callback_context
 
     if ctx.triggered:

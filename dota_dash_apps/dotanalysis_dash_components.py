@@ -40,6 +40,8 @@ def players_table():
     ]
     rows = []
     dota_players = get_available_players()
+    if dota_players == ["EMPTY"]:
+        return []
     for player in dota_players:
         dota_player = get_dota_player(player)
         rows.append(html.Tr([

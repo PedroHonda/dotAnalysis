@@ -3,7 +3,7 @@ import logging
 from dash import html, dcc
 from dash.dependencies import Input, Output
 
-from dash_app import app
+from dash_app import app, server
 from dota_dash_apps import dotanalysis_home
 from dota_dash_apps import dotanalysis_players
 from dota_dash_apps import dotanalysis_team

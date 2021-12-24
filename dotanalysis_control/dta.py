@@ -39,8 +39,12 @@ def get_dota_team(dota_team):
 
 def get_available_players():
     available_players = os.listdir(PLAYER_DIR_PATH)
-    available_players.remove(".gitignore")
-    return available_players
+    if ".gitignore" in available_players:
+        available_players.remove(".gitignore")
+    if available_players:
+        return available_players
+    else:
+        return ["EMPTY"]
 
 def register_player(player_id, player_name):
     dota_player = DotaPlayer(player_id, player_name)
