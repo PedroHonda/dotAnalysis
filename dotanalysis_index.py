@@ -4,12 +4,10 @@ from dash import html, dcc
 from dash.dependencies import Input, Output
 
 from dash_app import app
-from dota_dash_apps import dotanalysis_winrate as app_winrate
 from dota_dash_apps import dotanalysis_home as app_home
 from dota_dash_apps import dotanalysis_players as app_players
 from dota_dash_apps import dotanalysis_team
 
-from dota_dash_apps.dotanalysis_winrate import app_layout as winrate_app_layout
 from dota_dash_apps.dotanalysis_home import app_layout as home_app_layout
 from dota_dash_apps.dotanalysis_players import app_layout as players_app_layout
 
@@ -34,7 +32,6 @@ app.layout = html.Div([
                         dbc.Col(html.Img(src=app.get_asset_url('dota.png'), height="40px")),
                         dbc.Col(dbc.NavbarBrand("dotAnalysis", className="ml-2")),
                         dbc.Col(dbc.NavLink("Home", href="/", className="nav-link")),
-                        dbc.Col(dbc.NavLink("Winrate", href="/winrate", className="nav-link")),
                         dbc.Col(dbc.NavLink("Team", href="/team", className="nav-link")),
                         dbc.Col(html.A(html.I("Github",className="fa fa-github"),className="nav-link")),
                     ],
@@ -57,10 +54,7 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
-    if pathname == '/winrate':
-        app_winrate.layout = winrate_app_layout()
-        return app_winrate.layout
-    elif '/players/' in pathname:
+    if '/players/' in pathname:
         app_players.layout = players_app_layout(pathname.split("/players/")[1])
         return app_players.layout
     elif '/team' in pathname:
