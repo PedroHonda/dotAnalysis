@@ -1,0 +1,1 @@
+web: gunicorn dotanalysis_index_heroku:server

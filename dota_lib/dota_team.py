@@ -38,6 +38,15 @@ class DotaTeam:
 
         logger.info("DotaTeam created: %s", players)
 
+    def __repr__(self) -> str:
+        return "DotaTeam[{}]".format(["DotaPlayer("+str(player)+")" for player in self.dota_team])
+
+    def __str__(self) -> str:
+        return "{}".format([str(player) for player in self.dota_team])
+
+    def __len__(self) -> int:
+        return len(self.dota_team)
+
     def add_player(self, dota_player):
         '''
         Add a dota player to the team
@@ -51,6 +60,28 @@ class DotaTeam:
         else:
             self.dota_team.append(dota_player)
             logger.info("Dota Player %s added to the team", dota_player.player_name)
+            self.matches = self.get_team_simplified_matches()
+            logger.info("Team's matches updated")
+            self.winrate = self.get_team_winrate()
+            logger.info("Team's winrate updated")
+
+    def remove_player_by_idx(self, idx):
+        '''
+        Remove a dota player to the team either by index
+        '''
+        logger.info("remove_player_by_idx requested - idx %s", idx)
+        if not self.dota_team:
+            logger.error("DotaTeam is empty... not able to remove_player_by_idx")
+        elif isinstance(idx, int):
+            logger.error("idx must be an integer")
+            raise TypeError("idx must be an integer")
+        elif idx >= len(self.dota_team) or idx <0:
+            logger.error("idx provided %s is out of range len(self.dota_team) %s",
+                         idx, len(self.dota_team))
+            raise IndexError("idx out of range")
+        else:
+            logger.info("Dota Player %s removed from the team", self.dota_team[idx])
+            del self.dota_team[idx]
             self.matches = self.get_team_simplified_matches()
             logger.info("Team's matches updated")
             self.winrate = self.get_team_winrate()
