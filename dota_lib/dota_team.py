@@ -262,7 +262,9 @@ class DotaTeam:
         sdf_month = sdf[["win", "match"]].groupby([lambda x: x.year, lambda x: x.month]).sum()
         sdf_month["winrate"] = 100*sdf_month.win/sdf_month.match
         month = [dtm(date[0], date[1], 1) for date in sdf_month.index]
+        
         fig.add_trace(go.Scatter(x=month, y=sdf_month.winrate))
+        # fig.add_trace(go.Histogram(x=month, y=sdf_month.winrate, histfunc="count"))
         fig.layout.xaxis.color = 'white'
         fig.layout.yaxis.color = 'white'
 

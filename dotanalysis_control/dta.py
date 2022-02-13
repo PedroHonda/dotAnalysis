@@ -46,6 +46,13 @@ def get_available_players():
     else:
         return ["EMPTY"]
 
+def get_available_dota_players():
+    dota_players = []
+    available_players = get_available_players()
+    for player in available_players:
+        dota_players.append(get_dota_player(player))
+    return dota_players
+
 def register_player(player_id, player_name):
     dota_player = DotaPlayer(player_id, player_name)
     if not dota_player.get_all(): return

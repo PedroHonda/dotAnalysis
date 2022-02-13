@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import time
+import pandas as pd
 from datetime import datetime as dtm
 import requests
 
@@ -255,6 +256,47 @@ class DotaPlayer:
                 simplified.append(entry)
         return simplified
 
+    def simplified_matches_df(self, hero_dict=None):
+        '''
+        Based on self.player_matches return a Pandas DataFrame with:
+        - pd.DataFrame(data, columns)
+        -- data : list(zip(match_id, date, kda, hero, side, win))
+        -- columns : ["match_id", "date", "kda", "hero", "side", "win"]
+        --- "match_id" : match ID
+        --- "date" : <year>-<month>-<day> in a string format
+        --- "kda" : <kill>/<death>/<assist> in a string format
+        --- "hero" : in case hero_dict is provided, translate ID to hero's name
+        --- "side" : either 'radiant' or 'dire'
+        --- "win" : 0 = lose; 1 = win
+        '''
+        hero_dict = hero_dict or {}
+        match_id, date, kda, hero, side, win = [], [], [], [], [], []
+        if self.player_matches:
+            for match in self.player_matches:
+                # Skip games that are not "All Pick"
+                if match["game_mode"] not in (1, 22):
+                    continue
+                entry = {}
+                match_id.append(match["match_id"])
+                date.append(dtm.fromtimestamp(match["start_time"]))
+                kda.append(str(match["kills"])+"/"+str(match["deaths"])+"/"+str(match["assists"]))
+                hero.append(hero_dict.get(str(match["hero_id"]), str(match["hero_id"])))
+                # "player_slot" > 127 : Dire
+                # "player_slot" < 128 : Radiant
+                if match["player_slot"] > 127:
+                    side.append("dire")
+                else:
+                    side.append("radiant")
+                if side[-1] == "radiant" and match["radiant_win"]:
+                    win.append(1)
+                elif side[-1] == "dire" and not match["radiant_win"]:
+                    win.append(1)
+                else:
+                    win.append(0)
+        simplified = pd.DataFrame(list(zip(match_id, date, kda, hero, side, win)),
+                                  columns=["match_id", "date", "kda", "hero", "side", "win"])
+        return simplified
+
     def get_winrate_info(self):
         '''
         Requires player_matches
@@ -273,3 +315,83 @@ class DotaPlayer:
                     loss += 1
             return win, loss
         return 0, 0
+
+    def get_hero_performance(self, heroes_dict=None):
+        '''
+        '''
+        logger.info("get_hero_performance called")
+        heroes_dict = heroes_dict or {}
+
+    def get_hero_performance_with_players(self, hero, players, heroes_dict=None):
+        '''
+        Input:
+        - hero (str|int) : it can be either the hero name or hero ID
+        - players : list of DotaPlayer
+        
+        Output:
+        - pd.DataFrame(data, columns)
+        -- data : list(zip(player_id, t_matches, win, winrate))
+        -- columns : ["player_id", "t_matches", "win", "winrate"]
+        --- "player_id" : player ID
+        --- "t_matches" : total matches
+        --- "win" : total matches won
+        --- "winrate" : winrate
+        '''
+        logger.info("get_hero_performance_with_players called")
+        logger.debug("  for hero %s, players = %s", hero, players)
+        heroes_dict = heroes_dict or {}
+
+        if not isinstance(players, list):
+            logger.error("ERROR! players is not a list!")
+            return pd.DataFrame()
+
+        hero_dict_id = {}
+        if isinstance(hero, str):
+            if hero not in heroes_dict:
+                hero_dict_id =  {y.replace(" ", "_").replace("-", "_").lower():x
+                                for x,y in heroes_dict.items()}
+                hero = hero.replace(" ", "_").replace("-", "_").lower()
+                if hero in hero_dict_id:
+                    hero_id = hero_dict_id[hero.replace(" ", "_").replace("-", "_").lower()]
+                else:
+                    logger.debug("Couldn't find %s in %s",
+                                hero.replace(" ", "_").replace("-", "_").lower(),
+                                hero_dict_id)
+                    hero_id = hero
+        elif isinstance(hero, int):
+            hero_id = str(hero)
+        else:
+            logger.error("ERROR! Hero provided must be either int or str!")
+            return pd.DataFrame()
+
+        if self.player_matches:
+            simplified_matches = self.simplified_matches_df()
+            flt = simplified_matches['hero'].isin([hero_id])
+            matches_hero_match_id = simplified_matches[flt]["match_id"].tolist()
+            matches_hero_win = simplified_matches[flt]["win"].tolist()
+            matches_hero = dict(zip(matches_hero_match_id, matches_hero_win))
+
+            player_id, t_matches, win, winrate = [], [], [], []
+
+            try:
+                for player in players:
+                    player_matches_id = [match["match_id"] for match in player.player_matches]
+                    intersec = list(set(matches_hero_match_id) & set(player_matches_id))
+                    if not intersec:
+                        continue
+                    player_id.append(player.player_name+"_"+str(player.account_id))
+                    win.append(0)
+                    t_matches.append(0)
+                    for match_id in intersec:
+                        t_matches[-1]+=1
+                        if matches_hero[match_id]:
+                            win[-1]+=1
+                    winrate.append(win[-1]/t_matches[-1])
+                return pd.DataFrame(list(zip(player_id, t_matches, win, winrate)),
+                                            columns=["player_id", "t_matches", "win", "winrate"])
+            except ZeroDivisionError:
+                logger.exception("ERROR! calculating data for player %s", player)
+                logger.debug("matches_hero_match_id : %s", matches_hero_match_id)
+        else:
+            logger.error("ERROR! self.matches is not populated!")
+            return pd.DataFrame()

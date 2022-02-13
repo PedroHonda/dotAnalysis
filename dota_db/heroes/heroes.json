@@ -928,7 +928,7 @@
             "Disabler",
             "Nuker"
         ],
-        "legs": 2
+        "legs": 0
     },
     {
         "id": 69,
@@ -1540,7 +1540,7 @@
             "Disabler",
             "Escape"
         ],
-        "legs": 2
+        "legs": 0
     },
     {
         "id": 112,
@@ -1624,7 +1624,7 @@
             "Disabler",
             "Escape"
         ],
-        "legs": 2
+        "legs": 0
     },
     {
         "id": 123,
@@ -1633,11 +1633,12 @@
         "primary_attr": "agi",
         "attack_type": "Ranged",
         "roles": [
+            "Support",
             "Nuker",
             "Escape",
             "Disabler"
         ],
-        "legs": 2
+        "legs": 4
     },
     {
         "id": 126,
@@ -1690,6 +1691,21 @@
         "roles": [
             "Carry",
             "Durable"
+        ],
+        "legs": 2
+    },
+    {
+        "id": 136,
+        "name": "npc_dota_hero_marci",
+        "localized_name": "Marci",
+        "primary_attr": "str",
+        "attack_type": "Melee",
+        "roles": [
+            "Support",
+            "Carry",
+            "Initiator",
+            "Disabler",
+            "Escape"
         ],
         "legs": 2
     }

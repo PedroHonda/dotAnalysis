@@ -7,6 +7,7 @@ from dash_app import app, server
 from dota_dash_apps import dotanalysis_home
 from dota_dash_apps import dotanalysis_players
 from dota_dash_apps import dotanalysis_team
+from dota_dash_apps import dotanalysis_players_hero
 
 # Logging information
 logName = "./logs/dotanalysis_index.log"
@@ -51,7 +52,11 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
-    if '/players/' in pathname:
+    if '/players/' in pathname and '/hero/' in pathname:
+        player = pathname.split("/players/")[1].split("/")[0]
+        hero = pathname.split("/hero/")[1]
+        return dotanalysis_players_hero.app_layout(player, hero)
+    elif '/players/' in pathname:
         return dotanalysis_players.app_layout(pathname.split("/players/")[1])
     elif '/team' in pathname:
         return dotanalysis_team.app_layout

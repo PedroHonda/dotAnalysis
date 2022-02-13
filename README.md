@@ -31,4 +31,5 @@ July 17th, 2021
 This app is deployed here: https://dotanalysis.herokuapp.com/team
 
 For simplicity, the Heroku app will not provide the ability to register new players or update existing ones.
+
 I will update it from time to time though.
